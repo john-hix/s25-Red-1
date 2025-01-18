@@ -16,6 +16,7 @@
 		"python.defaultInterpreterPath": "./.venv/bin/python3",
 		"isort.args":["--profile", "black"],
 		"black-formatter.path": [".venv/bin/black"],
-		"pylint.interpreter": ["./.venv/bin/python3"]
+		"pylint.interpreter": ["./.venv/bin/python3"],
+		"mypy-type-checker.interpreter": ["./.venv/bin/python3"]
 	}
 }

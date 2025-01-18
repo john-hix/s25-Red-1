@@ -34,6 +34,7 @@ Install extensions:
 - ms-python.debugpy
 - ms-python.python
 - ms-python.pylint
+- ms-python.mypy-type-checker
 - ms-azuretools.vscode-docker
 
 Complete steps under "Python environment" before continuing.
