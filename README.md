@@ -59,7 +59,7 @@ Install make using your OS's method.
 
 Ubuntu: `sudo apt update && sudo apt install make -y`
 
-## Python environment setup
+# Python environment setup
 
 With Python installed on your system, complete the following:
 
@@ -69,7 +69,7 @@ With Python installed on your system, complete the following:
 3. Try editing a Python file and saving to test the `black` and `isort`
   integration for formatting files.
 
-### Troubleshooting: Set VSCode Python interpreter
+## Troubleshooting: Set VSCode Python interpreter
 
 If you have problems with "connecting to server"
 for Python files, you can use the manual steps below to set the Python interpreter
