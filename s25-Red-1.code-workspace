@@ -12,6 +12,7 @@
 				"source.organizeImports": "explicit"
 			},
 		},
+		// https://github.com/microsoft/vscode-python/wiki/Setting-descriptions#pythondefaultinterpreterpath
 		"python.defaultInterpreterPath": "./.venv/bin/python3",
 		"isort.args":["--profile", "black"],
 		"black-formatter.path": [".venv/bin/black"],
