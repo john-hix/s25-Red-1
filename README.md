@@ -19,6 +19,7 @@ Required software:
   - Should be available via OS package manager
 - Make
   - Should be available via OS package manager
+- Common UNIX utilities: `rm`, `find`, `test`, etc. used in Makefile.
 - Visual Studio Code
   - [Download](https://code.visualstudio.com/download)
 - Docker Engine (not `docker-compose` standalone program)
