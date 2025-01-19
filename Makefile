@@ -8,7 +8,7 @@ venv: .venv/touchfile
 	touch .venv/touchfile
 
 run: venv
-	. .venv/bin/activate; echo "make run is NOOP for now." # .venv/bin/flask run --debug
+	. .venv/bin/activate; .venv/bin/flask --app src/flaskr run --debug
 
 # Pytest command to run all unit/integration tests.
 # For running only a subset of all tests, invoke pytest
@@ -23,16 +23,16 @@ test: venv
 	. .venv/bin/activate; pytest ./tests
 
 lint: venv
-	. .venv/bin/activate; .venv/bin/pylint tests/*
+	. .venv/bin/activate; .venv/bin/pylint tests/* src/**/*.py
 
 # Static typing analysis
 static: venv
-	. .venv/bin/activate; .venv/bin/mypy --pretty tests/**/*.py
+	. .venv/bin/activate; .venv/bin/mypy --pretty tests/**/*.py src/**/*.py
 
 # Run import sort and opionated Python formatting
 fix: venv
-	. .venv/bin/activate; .venv/bin/isort tests
-	. .venv/bin/activate; .venv/bin/black tests
+	. .venv/bin/activate; .venv/bin/isort tests src
+	. .venv/bin/activate; .venv/bin/black tests src
 
 clean:
 	rm -rf .venv
