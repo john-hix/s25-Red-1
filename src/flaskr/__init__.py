@@ -13,6 +13,7 @@ def create_app():
 
     app.config.from_object(FlaskConfig())
 
+    # pylint: disable-next=fixme
     # TODO: replace with a health check endpoint
     # a simple page that says hello
     @app.route("/hello")

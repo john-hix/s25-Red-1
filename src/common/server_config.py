@@ -4,7 +4,7 @@ import os
 VERSION = '0.0.0'
 
 # Flask
-class FlaskConfig():
+# pylint: disable-next=too-few-public-methods
     """Handles getting config from environment variables to pass to the Flask
     application"""
     SECRET_KEY = os.getenv('SECRET_KEY')
