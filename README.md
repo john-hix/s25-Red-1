@@ -27,6 +27,12 @@ Required software:
 
 # VSCode setup
 
+This repo has VSCode workspace settings defined for it (see
+s25-Red-1.code-workspace). To use the workspace, simply open the folder
+containing this repo in VSCode. For more info, see
+[here](https://code.visualstudio.com/docs/editor/workspaces)
+.
+
 Install extensions:
 
 - ms-python.black-formatter
