@@ -34,6 +34,17 @@ fix: venv
 	. .venv/bin/activate; .venv/bin/isort tests src
 	. .venv/bin/activate; .venv/bin/black tests src
 
+docker-run:
+	sudo docker compose -f ./docker/dev/docker-compose.yml up -d
+
+# Does not remove data
+docker-down:
+	sudo docker compose -f ./docker/dev/docker-compose.yml down
+
+# Removes all data
+docker-clean: docker-down
+	sudo docker volume rm cuecode-dev_pgdata cuecode-dev_pgadmindata
+
 clean:
 	rm -rf .venv
 	find -iname "*.pyc" -delete
