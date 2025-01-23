@@ -6,10 +6,8 @@ services:
     image: pgvector/pgvector:0.8.0-pg17
     restart: unless-stopped
     ports:
-      - 127.0.0.1:5432:5432
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      - 5432:5432
+    env_file: .env
     volumes:
       - pgdata:/var/lib/postgresql/data 
   
@@ -17,10 +15,8 @@ services:
     image: dpage/pgadmin4:8.14.0
     restart: unless-stopped
     ports:
-      - 127.0.0.1:2345:80
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: password
+      - 2345:80
+    env_file: .env
     volumes:
       # https://www.pgadmin.org/docs/pgadmin4/latest/container_deployment.html#mapped-files-and-directories
       - pgadmindata:/var/lib/pgadmin
