@@ -1,27 +1,4 @@
-
-# The following is from https://flask.palletsprojects.com/en/stable/tutorial/layout/
-# on Jan 18, 2025
-
-.venv/
-
-*.pyc
-__pycache__/
-
-instance/
-
-.pytest_cache/
-.coverage
-htmlcov/
-
-dist/
-build/
-*.egg-info/
-
-
-# The following is from
-# https://raw.githubusercontent.com/github/gitignore/refs/heads/main/Python.gitignore
-# On Jan 18, 2025
-
+##https://github.com/github/gitignore/blob/main/Python.gitignore
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -196,3 +173,7 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+
+#vscode specifics
+.vscode

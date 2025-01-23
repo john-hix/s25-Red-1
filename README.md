@@ -60,11 +60,61 @@ the developer will end up needing to invoke some commands directly, not using
 the make commands provided. See the `Makefile` contents for a examples of
 cli program invocations and links to related documentation.
 
+## Mirroring CI (GitHub Actions)
+
+To run all the checks that CI will run when you open a pull request, issue
+`make all-checks`.
+
 ## Setup
 
 Install make using your OS's method.
 
 Ubuntu: `sudo apt update && sudo apt install make -y`
+
+# Docker for service dependencies
+
+The project uses Docker Compose to manage application service-level dependencies,
+such as the Postgres database.
+
+The Makefile provides several convenience commands for the developer to use.
+
+- `make docker-run` will bring up the Docker Compose stack, building volumes and
+  networks as necessary.
+- `make docker-down` will bring down the Docker Compose stack, while also
+  retaining data that was written to Docker volumes during execution. This allows
+  data to persist between development sessions.
+- `make docker-clean` will bring down the Docker compose stack AND remove ALL DATA
+  by deleting the Docker volumes associated with this project.
+
+More information on Docker:
+- [Compose](https://docs.docker.com/compose/)
+- [Volumes](https://docs.docker.com/engine/storage/volumes/)
+
+NOTE: the `docker-compose.yml` file intentionally publishes its services only
+on the `localhost` network interface, to avoid opening the developer's machine
+to remote attacks.
+
+## PGAdmin
+
+PG Admin is a GUI that can be helpful during database development.
+
+When using PG Admin, log in at `http://localhost:2345`, using `admin@example.com`
+for the user and `password` for the password.
+
+To connect to the Postgres database, follow the instructions below.
+
+1. On the right-hand side, right-click the "Servers" menu option.
+2. Drill down: Register -> Server...
+3. In the dialog that appears, enter "dev" as the name.
+3. Click the "Connection" tab.
+4. Enter the following information:
+    - Host name/address: `postgres`
+    - Port: `5432`
+    - Maintenance database: `postgres`
+    - Password: `password`
+    - Save password?: Yes
+5. Click "Save"
+6. It should have connected successfully.
 
 # Python environment setup
 

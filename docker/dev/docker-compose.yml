@@ -1,0 +1,26 @@
+# Compose file for the CueCode dev environment.
+# When editing, be sure to update the Makefile as appropriate.
+name: cuecode-dev
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.0-pg17
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    env_file: .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data 
+  
+  pgadmin:
+    image: dpage/pgadmin4:8.14.0
+    restart: unless-stopped
+    ports:
+      - 2345:80
+    env_file: .env
+    volumes:
+      # https://www.pgadmin.org/docs/pgadmin4/latest/container_deployment.html#mapped-files-and-directories
+      - pgadmindata:/var/lib/pgadmin
+ 
+volumes:
+  pgdata:
+  pgadmindata:
