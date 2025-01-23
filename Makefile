@@ -30,9 +30,13 @@ static: venv
 	. .venv/bin/activate; .venv/bin/mypy --pretty tests/**/*.py src/**/*.py
 
 # Run import sort and opionated Python formatting
-fix: venv
+style-fix: venv
 	. .venv/bin/activate; .venv/bin/isort tests src
 	. .venv/bin/activate; .venv/bin/black tests src
+
+style-check: venv
+	. .venv/bin/activate; .venv/bin/isort tests src --check --verbose
+	. .venv/bin/activate; .venv/bin/black tests src --check --verbose
 
 docker-run:
 	sudo docker compose -f ./docker/dev/docker-compose.yml up -d

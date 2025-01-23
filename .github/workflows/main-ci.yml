@@ -34,13 +34,13 @@ jobs:
           if [ -f setup.py ]; then pip install setuptools && python setup.py install --force; fi
 
       - name: Run Pytest to run unit tests
-        run: pytest
+        run: make test
 
       - name: Run Pylint to check code quality
-        run: pylint $(git ls-files '*.py')
+        run: make lint
 
-      - name: Run Black to check code style
-        run: black $(git ls-files "*.py") --check --verbose
+      - name: Run Black and isort to check code style
+        run: make style-check
 
       - name: Run Mypy to check static types
         run: mypy $(git ls-files '*.py')
