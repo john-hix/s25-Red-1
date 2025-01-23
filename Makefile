@@ -10,6 +10,10 @@ venv: .venv/touchfile
 run: venv
 	. .venv/bin/activate; .venv/bin/flask --app src/flaskr run --debug
 
+# For devs wanting to mirror a complete CI run locally before pushing to GitHub
+all-checks: style-check static lint test
+	echo "Done"
+
 # Pytest command to run all unit/integration tests.
 # For running only a subset of all tests, invoke pytest
 # directly (after activating the venv).

@@ -1,5 +1,8 @@
 # Adapted from the Python template repository at the following link on Jan 18, 2025
 # https://github.com/ConsciousML/python-template/blob/main/.github/workflows/main-ci.yml
+# Be sure to update the Makefile if you update what is run here, in particular
+# the "all-checks" target, which is meant to perform the same checks locally
+# as this runner does as part of GitHub Actions.
 
 name: main-ci
 run-name: Running Main CI by ${{ github.actor }}
