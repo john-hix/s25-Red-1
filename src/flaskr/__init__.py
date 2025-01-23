@@ -3,8 +3,9 @@ middleware like Gunicorn, etc."""
 
 import os
 
-from common.server_config import FlaskConfig
 from flask import Flask
+
+from common.server_config import FlaskConfig
 
 
 def create_app():
