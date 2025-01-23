@@ -54,6 +54,11 @@ the developer will end up needing to invoke some commands directly, not using
 the make commands provided. See the `Makefile` contents for a examples of
 cli program invocations and links to related documentation.
 
+## Mirroring CI (GitHub Actions)
+
+To run all the checks that CI will run when you open a pull request, issue
+`make all-checks`.
+
 ## Setup
 
 Install make using your OS's method.
