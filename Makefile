@@ -27,7 +27,7 @@ test: venv
 	. .venv/bin/activate; pytest ./tests
 
 lint: venv
-	. .venv/bin/activate; .venv/bin/pylint tests/* src/**/*.py
+	. .venv/bin/activate; .venv/bin/pylint --load-plugins=pylint_module_boundaries tests/* src/**/*.py
 
 # Static typing analysis
 static: venv
