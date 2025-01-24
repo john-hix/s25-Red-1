@@ -8,7 +8,7 @@ venv: .venv/touchfile
 	touch .venv/touchfile
 
 run: venv
-	. .venv/bin/activate; .venv/bin/flask --app src/flask run --debug
+	. .venv/bin/activate; .venv/bin/flask --app src/app:create_app run --debug
 
 # For devs wanting to mirror a complete CI run locally before pushing to GitHub
 all-checks: style-check static lint test
