@@ -8,7 +8,7 @@ banned-imports = '''
     "common(\\..*)?": ["app(\\..*)?", "configuration(\\..*)?", "runtime(\\..*)?"],
     "app(\\..*)?": ["configuration(\\..*)?", "runtime(\\..*)?"],
     "configuration(\\..*)?": ["app(\\..*)?", "runtime(\\..*)?"],
-    "runtime(\\..*)?": ["configuration(\\..*)?", "app(\\..*)?"],
+    "runtime(\\..*)?": ["configuration(\\..*)?", "app(\\..*)?"]
 }
 '''
 banned-imports-check-usages = true
