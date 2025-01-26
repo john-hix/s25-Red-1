@@ -15,7 +15,7 @@ Team Red - Spring 2025
 
 Required software:
 
-- Python 3.12
+- Python 3.13 (used as `python3.13`)
   - Should be available via OS package manager
 - Make
   - Should be available via OS package manager

@@ -3,7 +3,7 @@
 venv: .venv/touchfile
 
 .venv/touchfile: requirements.txt
-	test -d .venv || python3 -m venv .venv # TODO: analyze key project dependencies and set Python minor version accordingly.
+	test -d .venv || python3.13 -m venv .venv # TODO: analyze key project dependencies and set Python minor version accordingly.
 	. .venv/bin/activate; pip install -Ur requirements.txt
 	touch .venv/touchfile
 
@@ -27,7 +27,7 @@ test: venv
 	. .venv/bin/activate; pytest ./tests
 
 lint: venv
-	. .venv/bin/activate; .venv/bin/pylint tests/* src/**/*.py
+	. .venv/bin/activate; .venv/bin/pylint --load-plugins=pylint_module_boundaries tests/* src/**/*.py
 
 # Static typing analysis
 static: venv
