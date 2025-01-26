@@ -177,3 +177,9 @@ cython_debug/
 
 #vscode specifics
 .vscode
+
+#cuecode specifics
+## docker database
+pgdata
+pgadmindata
+dbmate/migrations/**
