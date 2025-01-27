@@ -8,7 +8,6 @@ Team Red - Spring 2025
   - abaus002 - Andrew Bausas - abaus002@odu.edu
   - dpate021 - Diya Patel - dpate021@odu.edu
   - z-targz - Chase Wallace - cwall043@odu.edu
-  - paragonsean - Sean Baker - sbake021@odu.edu
 
 
 # Dev environment
