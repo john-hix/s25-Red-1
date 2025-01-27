@@ -35,12 +35,12 @@ static: venv
 
 # Run import sort and opionated Python formatting
 style-fix: venv
-	. .venv/bin/activate; .venv/bin/isort tests src
+	. .venv/bin/activate; .venv/bin/isort --profile black tests src
 	. .venv/bin/activate; .venv/bin/black tests src
 
 style-check: venv
-	. .venv/bin/activate; .venv/bin/isort tests src --check --verbose
-	. .venv/bin/activate; .venv/bin/black tests src --check --verbose
+	. .venv/bin/activate; .venv/bin/isort --profile black tests src --check
+	. .venv/bin/activate; .venv/bin/black tests src --check
 
 docker-run:
 	sudo docker compose -f ./docker/dev/docker-compose.yml up -d
