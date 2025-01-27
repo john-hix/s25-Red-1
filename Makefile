@@ -24,23 +24,23 @@ all-checks: style-check static lint test
 # Consult with the Pytest documentation for other use cases:
 # https://docs.pytest.org/en/stable/how-to/usage.html#usage
 test: venv
-	. .venv/bin/activate; pytest ./tests
+	. .venv/bin/activate; pytest ./src
 
 lint: venv
-	. .venv/bin/activate; .venv/bin/pylint --load-plugins=pylint_module_boundaries tests/* src/**/*.py
+	. .venv/bin/activate; .venv/bin/pylint --load-plugins=pylint_module_boundaries src/**/*.py
 
 # Static typing analysis
 static: venv
-	. .venv/bin/activate; .venv/bin/mypy --pretty tests/**/*.py src/**/*.py
+	. .venv/bin/activate; .venv/bin/mypy --pretty src/**/*.py
 
 # Run import sort and opionated Python formatting
 style-fix: venv
-	. .venv/bin/activate; .venv/bin/isort --profile black tests src
-	. .venv/bin/activate; .venv/bin/black tests src
+	. .venv/bin/activate; .venv/bin/isort --profile black src
+	. .venv/bin/activate; .venv/bin/black src
 
 style-check: venv
-	. .venv/bin/activate; .venv/bin/isort --profile black tests src --check
-	. .venv/bin/activate; .venv/bin/black tests src --check
+	. .venv/bin/activate; .venv/bin/isort --profile black src --check
+	. .venv/bin/activate; .venv/bin/black src --check
 
 docker-run:
 	sudo docker compose -f ./docker/dev/docker-compose.yml up -d
