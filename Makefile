@@ -5,7 +5,7 @@ venv: .venv/touchfile
 .venv/touchfile: requirements.txt
 	test -d .venv || python3.13 -m venv .venv # TODO: analyze key project dependencies and set Python minor version accordingly.
 	. .venv/bin/activate; pip install -Ur requirements.txt
-	pip install -e .
+	. .venv/bin/activate; pip install -e .
 	touch .venv/touchfile
 
 run: venv
