@@ -24,4 +24,4 @@ banned-imports-check-usages = true
 # at the following source:
 # https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
 [tool.mypy]
-disable_error_code = ["import-untyped"]
+disable_error_code = ["import-untyped", "import-not-found"]
