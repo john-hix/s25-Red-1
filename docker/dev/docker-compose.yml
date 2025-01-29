@@ -1,3 +1,4 @@
+# Compose file for the CueCode dev environment.
 name: cuecode-dev
 services:
   postgres:
@@ -7,7 +8,7 @@ services:
       - 5432:5432
     env_file: .env
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4:8.14.0
@@ -16,13 +17,13 @@ services:
       - 2345:80
     env_file: .env
     volumes:
-      - ./pgadmindata:/var/lib/pgadmin
+      - pgadmindata:/var/lib/pgadmin
 
   dbmate:
     image: ghcr.io/amacneil/dbmate:main
     env_file: .env
     volumes:
-      - ./dbmate:/db
+      - dbmate:/db
     depends_on:
       - postgres
     entrypoint: [ "sh", "/db/dbmate-entrypoint.sh" ]
@@ -30,3 +31,4 @@ services:
 volumes:
   pgdata:
   pgadmindata:
+  dbmate:

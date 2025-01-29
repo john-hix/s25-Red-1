@@ -180,6 +180,3 @@ cython_debug/
 
 #cuecode specifics
 ## docker database
-pgdata
-pgadmindata
-dbmate/migrations/**
