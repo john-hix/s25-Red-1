@@ -1,3 +1,8 @@
+[project]
+name = "src"
+version = "0.0.0"
+requires-python = ">= 3.13"
+
 # This config used from the following source, which also documents the pylint
 # extension in use:
 # https://github.com/DetachHead/pylint-module-boundaries/blob/master/README.md
@@ -12,3 +17,11 @@ banned-imports = '''
 }
 '''
 banned-imports-check-usages = true
+
+# Remove requirements for types when importing CueCode and third-party modules
+#
+# This is the most extreme solution to the "import-untyped" error found
+# at the following source:
+# https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+[tool.mypy]
+disable_error_code = ["import-untyped"]

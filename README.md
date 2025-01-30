@@ -125,6 +125,27 @@ With Python installed on your system, complete the following:
 3. Try editing a Python file and saving to test the `black` and `isort`
   integration for formatting files.
 
+## The CueCode Python package
+
+This explains why we've made a Python package for this project. If you need
+to install the CueCode Python codebase, you don't need to read this; simply
+run a `make` command to run or build the Python app, and the Python package
+will be installed automatically.
+
+The Python project is installed as a package so that sibling level
+modules may import each other by referring to a single root module, `src`.
+
+Without installing the project as a package, there seemed no other way to
+effect sibling-level module imports.
+
+The specification for the Python package is in standard `pyproject.toml` file.
+The package is listed in the `requirements.txt` file.
+
+Installing from requirements.txt allows us to hard-code the `src` directory
+we need. This avoids current bugs in the `pip install -e .` command,
+which turns the relative path into an absolute path, a path which would be
+different on each developer's machine.
+
 ## Troubleshooting: Set VSCode Python interpreter
 
 If you have problems with "connecting to server"
