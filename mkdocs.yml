@@ -1,0 +1,66 @@
+site_name: Team RED | CueCode
+site_url: https://john-hix.github.io/cuecode-website/
+use_directory_urls: false
+theme:
+  name: material
+  logo: img/cuecode-logo.png
+  favicon: img/cuecode-logo.png
+#favicon: img/
+  palette:
+    #DARK AND LIGHT THEME
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.prune
+    - navigation.indexes
+    - navigation.top
+    - toc.follow
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - header.autohide
+    - content.code.copy
+plugins:
+  - search
+markdown_extensions:
+  - tables
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - md_in_html
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+extra_files:
+  - pdf/CueCode_Feasibility_Final.pdf
+  - pdf/CueCode_Feasibility_4.pdf
+  - pdf/CueCode_Feasibility_3.pdf
+  - pdf/CueCode_Feasibility_2.pdf
+  - pdf/CueCode_Feasibility_1.pdf
+  - pdf/CueCode_JohnHicks.pdf
+
+nav:
+  - 'index.md'
+  - Glossary: glossary.md
+  - Presentation: presentation.md
+  - References: references.md
+  - Team: team.md
+  - Labs: labs.md
+
+
