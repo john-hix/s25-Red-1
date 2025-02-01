@@ -25,12 +25,15 @@ def create_app():
     api_bp = create_api_blueprint()
     app.register_blueprint(api_bp, url_prefix="/api")
 
-    # pylint: disable-next=fixme
-    # TODO: replace with a health check endpoint
-    # a simple page that says hello
-    @app.route("/hello")
-    def hello():
-        return "Hello, World!"
+    # health check endpoint
+    @app.route("/health-check", methods=["GET"])
+    def health():
+        return jsonify(
+            {
+                "status": "UP",
+                "database": "UP - [To be worked upon]",  # TODO: add database health pylint: disable=fixme
+            }
+        )
 
     @app.route("/")
     def index():

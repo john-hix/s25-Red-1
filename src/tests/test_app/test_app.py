@@ -41,6 +41,15 @@ def runner(app):
     return app.test_cli_runner()
 
 
+def test_health_check_endpoint(client):
+    """Test that the blueprint is registered and serving the index route"""
+    response = client.get("/health-check")
+    print(response.content_type)
+    assert_that(response.content_type, equal_to("application/json"))
+    assert_that(response.status_code, equal_to(200))
+    assert_that(str(response.data), contains_string(("{")))
+
+
 def test_portal_index_existence(client):
     """Test that the blueprint is registered and serving the index route"""
     response = client.get("/portal/")
