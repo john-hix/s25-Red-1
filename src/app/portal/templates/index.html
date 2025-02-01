@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Portal Index page</title>
+</head>
+<body>
+    <div>
+        <p>This is a page that will very simply show the option to upload
+            an API spec. If the user is not logged in, it should redirect them
+            to the login page via <code>Flask Session</code> config.
+        </p>
+        <p>
+            <!-- Example of using url_for in a Blueprint context: -->
+            <a href="{{ url_for('portal.upload_spec') }}">Link to upload</a>
+        </p>
+    </div>
+</body>
+</html>

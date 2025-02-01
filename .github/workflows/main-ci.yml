@@ -17,7 +17,7 @@ env:
   PYTHON_VERSION: "3.13"
 
 jobs:
-  check-code-quality:
+  run-checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -29,21 +29,6 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pytest pylint bandit mypy
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f setup.py ]; then pip install setuptools && python setup.py install --force; fi
+      - name: Install dependencies and run checks
+        run: make -j2 all-checks
 
-      - name: Run Pytest to run unit tests
-        run: make test
-
-      - name: Run Pylint to check code quality
-        run: make lint
-
-      - name: Run Black and isort to check code style
-        run: make style-check
-
-      - name: Run Mypy to check static types
-        run: mypy $(git ls-files '*.py')
