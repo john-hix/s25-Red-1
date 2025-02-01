@@ -14,6 +14,7 @@ this is a website specific branch
 any changes to this should automatically trigger a pipeline to publish our site
 
 # content from old readme:  
+original repository: https://github.com/john-hix/cuecode-website
 Install dependencies:
 
 Have Python3. Then, install pip dependencies:
