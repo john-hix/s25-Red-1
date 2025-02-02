@@ -4,6 +4,28 @@ icon: material/flask
 ---
 
 ---
+
+# CS411W labs
+
+The changes are listed with the most recent at the top.
+
+## Lab 1 section 1 updates
+
+## John Hicks
+<html markdown>
+<iframe src="pdf/john-lab-411-lab-v1.pdf" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+</html>
+
+
+## Lab 1 formatting updates
+
+### John Hicks
+<html markdown>
+<iframe src="pdf/john-lab-411-lab-v0.pdf" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+</html>
+
+# CS410 lab preparation
+
 The team produced a [template](pdf/Team_RED_Lab_1_outline_1.pdf),
 which we each individually used to write a one-page summary of CueCode
 for someone unfamiliar with the domain.
