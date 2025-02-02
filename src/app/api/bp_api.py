@@ -1,7 +1,21 @@
 """Flask Blueprint for the Web API that runs the CueCode runtime algorithm"""
+from functools import wraps
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
+
+API_KEY = "TEST_API_KEY"
+
+def authenticate(f):
+    """Decorator to enforce API key authentication"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        api_key = request.headers.get("Authorization")
+        if api_key != API_KEY:
+            return jsonify({"error": "Unauthorized"}), 401
+        return f(*args, **kwargs)
+
+    return decorated_function
 
 def create_blueprint():
     """Flask Blueprint for the Web API that runs the CueCode runtime algorithm"""
@@ -13,6 +27,7 @@ def create_blueprint():
         return jsonify({"error": "Not Found"}), 404
 
     @api_bp.route("/")
+    @authenticate
     def index():
 
         # pylint: disable-next=fixme
