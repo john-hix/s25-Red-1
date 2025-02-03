@@ -1,6 +1,8 @@
 """Flask Blueprint for the Web API that runs the CueCode runtime algorithm"""
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, current_app, jsonify
+
+from common.models.cuecode_config import CuecodeConfig
 
 
 def create_blueprint():
@@ -14,7 +16,6 @@ def create_blueprint():
 
     @api_bp.route("/")
     def index():
-
         # pylint: disable-next=fixme
         # TODO: decorator for API key session handling.
         return jsonify({"example": "JSON"})
