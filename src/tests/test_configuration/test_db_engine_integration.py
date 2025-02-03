@@ -1,4 +1,5 @@
 """Integration tests for the configuration algorithm"""
+
 from common.database_engine import DBEngine
 from configuration.config_algo import config_algo_openapi
 
