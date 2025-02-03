@@ -25,6 +25,8 @@ all-checks: style-check static lint test
 # Consult with the Pytest documentation for other use cases:
 # https://docs.pytest.org/en/stable/how-to/usage.html#usage
 test: venv
+	echo "TODO: set up separate Docker PG with seeds for local integration testing"
+	[ $$CI = "true" ] && cat .env.sample | sed 's/localhost/postgres/' > .env || echo "Running locally"
 	. .venv/bin/activate; pytest ./src
 
 lint: venv
