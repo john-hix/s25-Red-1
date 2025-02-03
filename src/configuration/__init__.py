@@ -1,1 +1,3 @@
-# https://docs.python.org/3/reference/import.html#regular-packages
+"""Module to configure an OpenAPI spec in CueCode"""
+
+from .config_algo import config_algo_openapi

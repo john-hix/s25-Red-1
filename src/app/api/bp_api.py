@@ -14,7 +14,6 @@ def create_blueprint():
 
     @api_bp.route("/")
     def index():
-
         # pylint: disable-next=fixme
         # TODO: decorator for API key session handling.
         return jsonify({"example": "JSON"})
