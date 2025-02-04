@@ -33,7 +33,7 @@ test: venv ci-setup-as-needed
 	. .venv/bin/activate; pytest ./src
 
 # TODO: need dbmate installed
-ci-setup-as-needed: venv:
+ci-setup-as-needed: venv
 	[ $$CI = "true" ] && cp .env.sample .env || echo "Running locally"
 	[ $$CI = "true" ] && dbmate --url "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" up
 
