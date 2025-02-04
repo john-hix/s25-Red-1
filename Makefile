@@ -24,9 +24,13 @@ all-checks: style-check static lint test
 #
 # Consult with the Pytest documentation for other use cases:
 # https://docs.pytest.org/en/stable/how-to/usage.html#usage
+#
+# GitHub runner info:
+# Service containers have their ports mapped to the Runner's localhost interface.
+# Source: https://docs.github.com/en/actions/use-cases-and-examples/using-containerized-services/about-service-containers#running-jobs-on-the-runner-machine
 test: venv
 	echo "TODO: set up separate Docker PG with seeds for local integration testing"
-	[ $$CI = "true" ] && cat .env.sample | sed 's/localhost/postgres/' > .env || echo "Running locally"
+	[ $$CI = "true" ] && cp .env.sample .env || echo "Running locally"
 	. .venv/bin/activate; pytest ./src
 
 lint: venv
