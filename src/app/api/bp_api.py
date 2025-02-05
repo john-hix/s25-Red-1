@@ -2,6 +2,7 @@
 
 from flask import Blueprint, jsonify
 
+
 def create_blueprint():
     """Flask Blueprint for the Web API that runs the CueCode runtime algorithm"""
 
