@@ -34,8 +34,8 @@ test: venv ci-setup-as-needed
 
 # Assumes dbmate has been installed on the CI runner
 ci-setup-as-needed: venv
-	[ $$CI = "true" ] && cp .env.sample .env || echo "Running locally"
-	[ $$CI = "true" ] && dbmate --url "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" up
+	[ "$$CI" = "true" ] && cp .env.sample .env || echo "Running locally"
+	[ "$$CI" = "true" ] && dbmate --url "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" up || echo "Skipping migration for local run"
 
 
 lint: venv
