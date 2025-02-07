@@ -7,7 +7,7 @@ icon: material/wrench
 
 Our verification plan will be published here at a later time.
 
-## Code coverage
+### Code coverage
 
 Visit
 <a href="python-coverage/index.html" target="_blank">this link</a>
