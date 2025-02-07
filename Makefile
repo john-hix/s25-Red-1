@@ -30,7 +30,7 @@ all-checks: style-check static lint test
 # Source: https://docs.github.com/en/actions/use-cases-and-examples/using-containerized-services/about-service-containers#running-jobs-on-the-runner-machine
 test: venv ci-setup-as-needed
 	echo "TODO: set up separate Docker PG with seeds for local integration testing"
-	. .venv/bin/activate; pytest ./src
+	. .venv/bin/activate; pytest --cov=src/app --cov=src/configuration --cov=src/common --cov=src/runtime --cov-report=html ./src
 
 # Assumes dbmate has been installed on the CI runner
 ci-setup-as-needed: venv
