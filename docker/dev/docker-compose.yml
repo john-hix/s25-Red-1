@@ -23,7 +23,7 @@ services:
     image: ghcr.io/amacneil/dbmate:main
     env_file: .env
     volumes:
-      - dbmate:/db
+      - ./db:/db
     depends_on:
       - postgres
     entrypoint: [ "sh", "/db/dbmate-entrypoint.sh" ]
@@ -31,4 +31,3 @@ services:
 volumes:
   pgdata:
   pgadmindata:
-  dbmate:
