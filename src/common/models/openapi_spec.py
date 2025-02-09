@@ -9,7 +9,7 @@ from .base import Base
 
 
 class OpenAPISpec(Base):  # pylint: disable=too-few-public-methods
-    """Module for the class that represents the OpenAPI spec and its CueCode config"""
+    """An OpenAPI spec as stored in the CueCode database"""
 
     __tablename__ = "openapi_spec"
 
