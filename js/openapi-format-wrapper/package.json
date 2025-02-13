@@ -1,0 +1,16 @@
+{
+  "name": "openapi-format-wrapper",
+  "version": "1.0.0",
+  "description": "wrapper for openapi-format that reads from stdin",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "wrapper.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "mock-fs": "~5.4.1",
+    "openapi-format": "1.25.0"
+  }
+}
