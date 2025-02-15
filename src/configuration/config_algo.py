@@ -18,8 +18,6 @@ from openapi import OpenAPIObject
 from openapi_spec_validator import validate
 import jsonref
 
-from openapi_spec_validator import validate
-
 db_engine_for_workaround = DBEngine()  # would be managed in dramatiq actor code
 # if workaround to avoid Dramatiq fails.
 
@@ -96,12 +94,15 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
     # BEGIN Chase's work
     openapi_spec = session.get(OpenAPISpec, openapi_spec_id)
 
+    base_server_url = openapi_spec.base_url
+
     # Update OpenAPI to v3.1, validate spec, and fix empty schemas
     formatted_openapi_spec = format_convert(openapi_spec)
 
     openapi_repr = OpenAPIObject.from_formatted_json(
         UUID(openapi_spec_id), 
-        session, 
+        session,
+        base_server_url,
         formatted_openapi_spec
     )
 

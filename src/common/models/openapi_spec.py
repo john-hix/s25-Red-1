@@ -16,3 +16,4 @@ class OpenAPISpec(Base):  # pylint: disable=too-few-public-methods
     openapi_spec_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     spec_text = Column(Text)
     file_name = Column(String)
+    base_url = Column(String)

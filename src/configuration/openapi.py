@@ -1174,6 +1174,8 @@ class OpenAPIObject(BaseModel):
 
     db_session: scoped_session
 
+    base_url: str
+
     session_errors_encountered: bool = False
 
     @model_validator(mode='wrap')
@@ -1182,7 +1184,7 @@ class OpenAPIObject(BaseModel):
         if values["servers"] is None or values["servers"].empty():
             values["servers"] = [
                 ServerObject(
-                    url = "/",
+                    url = values["base_url"],
                     description=None,
                     variables=None,
                     uuid = uuid5(namespace=NAMESPACE_URL, name="/"),
@@ -1199,6 +1201,11 @@ class OpenAPIObject(BaseModel):
             session = values["db_session"] 
         except KeyError:
             raise ValueError("db_session must be passed as the second positional keyword")
+
+        try:
+            base_url = values["base_url"]
+        except KeyError:
+            raise ValueError("base_url must be passed as the third positional keyword")
 
         id_token = openapi_spec_id.set(values["openapi_spec_uuid"])
         config_info[spec_id]["session"] = session
@@ -1351,6 +1358,8 @@ class OpenAPIObject(BaseModel):
                 'required': required
             }
         }
+
+        
 
         return out
 
