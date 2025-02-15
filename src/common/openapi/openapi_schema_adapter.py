@@ -16,16 +16,6 @@ class OpenAPISchemaAdapter():
     def __init__(self, spec: OpenAPISpec):
         self.spec = spec
 
-    def validate(self):
-        """Determine if the text of the spec is a valid OpenAPI spec"""
-        # Build file at /tmp from text in spec.spec_text
-        # This is advantageous because we keep the text in the DB
-        # and avoid having to have a distributed file system - we only
-        # need this temp file on the host (in the container) that our program
-        # is running on (in).
-
-        print(read_from_filename("./tmp/nextcloud.json"))
-
     def get_dereferencing_json(self) -> JsonRef:
         """Get the spec as a dict, with all JSON references lazily dereferenced
         on access, to allow us to follow the `'$ref'`s in the OpenAPI spec """
