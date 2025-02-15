@@ -1,6 +1,8 @@
 """Flask Blueprint for the Web API that runs the CueCode runtime algorithm"""
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, current_app, jsonify
+
+from common.models.cuecode_config import CuecodeConfig
 
 
 def create_blueprint():

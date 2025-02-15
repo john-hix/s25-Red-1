@@ -3,6 +3,7 @@ attrs==25.1.0
 black==24.10.0
 blinker==1.9.0
 certifi==2025.1.31
+chardet==5.2.0
 charset-normalizer==3.4.1
 click==8.1.8
 coverage==7.6.10
@@ -29,9 +30,12 @@ openapi-spec-validator==0.7.1
 packaging==24.2
 pathable==0.4.4
 pathspec==0.12.1
+pip-autoremove==0.10.0
 platformdirs==4.3.6
 pluggy==1.5.0
 psycopg2-binary==2.9.10
+pydantic==2.10.6
+pydantic_core==2.27.2
 PyHamcrest==2.1.0
 pylint==3.3.3
 pylint-module-boundaries==1.3.1
@@ -43,6 +47,8 @@ referencing==0.36.2
 requests==2.32.3
 rfc3339-validator==0.1.4
 rpds-py==0.22.3
+ruamel.yaml==0.18.10
+setuptools==75.8.0
 six==1.17.0
 SQLAlchemy==2.0.37
 tomli==2.2.1

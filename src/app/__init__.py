@@ -5,6 +5,7 @@ import os
 
 from flask import Flask, jsonify, redirect
 
+from common.models.cuecode_config import CuecodeConfig
 from common.server_config import FlaskConfig
 
 from .api.bp_api import create_blueprint as create_api_blueprint

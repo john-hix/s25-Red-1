@@ -8,7 +8,7 @@ venv: .venv/touchfile
 	. .venv/bin/activate; pip install -e .
 	touch .venv/touchfile
 
-run: venv
+run: venv node
 	. .venv/bin/activate; .venv/bin/flask --app src/app:create_app run --debug
 
 # For devs wanting to mirror a complete CI run locally before pushing to GitHub
@@ -71,5 +71,8 @@ clean:
 	find -iname "*__pycache__" -exec rm -r {} +
 	find -iname "*.pytest_cache" -exec rm -r {} +
 	find -iname "*.mypy_cache" -exec rm -r {} +
+	rm -rf node_modules/
+	rm package-lock.json
 	
-	
+npm:
+	npm install

@@ -180,3 +180,9 @@ cython_debug/
 
 #vscode specifics
 .vscode
+
+#node package lock
+package-lock.json
+
+#locally installed node modules
+node_modules/
