@@ -1174,6 +1174,8 @@ class OpenAPIObject(BaseModel):
 
     db_session: scoped_session
 
+    session_errors_encountered: bool = False
+
     @model_validator(mode='wrap')
     @classmethod
     def validate_model(cls, values, handler):
