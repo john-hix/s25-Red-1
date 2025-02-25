@@ -1,4 +1,5 @@
 """Flask Blueprint for the Web API that runs the CueCode runtime algorithm"""
+
 from functools import wraps
 
 from flask import Blueprint, jsonify, request
