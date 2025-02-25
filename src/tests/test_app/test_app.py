@@ -10,6 +10,8 @@ from hamcrest import assert_that, contains_string, equal_to
 # pylint: disable-next=import-error
 from app import create_app  # type: ignore
 
+API_KEY = "TEST_API_KEY"
+
 
 @pytest.fixture()
 def app():
@@ -78,7 +80,7 @@ def test_app_index_redirect_to_portal_index(client):
 
 def test_api_index(client):
     """Test that the blueprint is registered and serving the index route"""
-    response = client.get("/api/")
+    response = client.get("/api/", headers={"Authorization": API_KEY})
     print(response.content_type)
     assert_that(response.content_type, equal_to("application/json"))
     assert_that(response.status_code, equal_to(200))
