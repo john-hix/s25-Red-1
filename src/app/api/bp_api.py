@@ -3,11 +3,12 @@ from functools import wraps
 
 from flask import Blueprint, jsonify, request
 
-
 API_KEY = "TEST_API_KEY"
+
 
 def authenticate(f):
     """Decorator to enforce API key authentication"""
+
     @wraps(f)
     def decorated_function(*args, **kwargs):
         api_key = request.headers.get("Authorization")
@@ -16,6 +17,7 @@ def authenticate(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
 
 def create_blueprint():
     """Flask Blueprint for the Web API that runs the CueCode runtime algorithm"""
