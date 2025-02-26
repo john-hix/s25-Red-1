@@ -5,7 +5,7 @@ import os
 
 from flask import Flask, jsonify, redirect
 
-from common.server_config import FlaskConfig
+from common.app_config import FlaskConfig
 
 from .api.bp_api import create_blueprint as create_api_blueprint
 from .portal.bp_portal import create_blueprint as create_portal_blueprint

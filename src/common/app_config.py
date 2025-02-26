@@ -19,3 +19,14 @@ DB_URI = (
 
 SQLALCHEMY_POOL_RECYCLE = int(os.getenv("SQLALCHEMY_POOL_RECYCLE", "35"))
 SQLALCHEMY_POOL_TIMEOUT = int(os.getenv("SQLALCHEMY_POOL_TIMEOUT", "7"))
+
+
+# Flask
+# pylint: disable-next=too-few-public-methods
+class FlaskConfig:
+    """Handles getting config from environment variables to pass to the Flask
+    application"""
+
+    SERVER_NAME = os.getenv("SERVER_NAME")
+    PREFERRED_URL_SCHEME = os.getenv("PREFERRED_URL_SCHEME", "http")
+    WTF_CSRF_SECRET_KEY = os.getenv("WTF_CSRF_SECRET_KEY", "testing")
