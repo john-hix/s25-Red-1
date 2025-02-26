@@ -94,6 +94,7 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
     # BEGIN Chase's work
     openapi_spec = session.get(OpenAPISpec, openapi_spec_id)
 
+    #Needed in the event no server is specified in the servers array
     base_server_url = openapi_spec.base_url
 
     # Update OpenAPI to v3.1, validate spec, and fix empty schemas

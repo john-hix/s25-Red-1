@@ -25,6 +25,10 @@ class OpenAPIOperation(Base):  # pylint: disable=too-few-public-methods
     __tablename__ = "openapi_operation"
 
     openapi_operation_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    
+    # An operation can belong to a list of servers, and is said to be defined 
+    # for each of those servers
+    # As a constraint for CueCode, there must be exactly one server per path.
     oa_server_id = Column(
         UUID(as_uuid=True),
         ForeignKey("openapi_server.openapi_server_id"),

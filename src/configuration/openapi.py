@@ -1342,6 +1342,9 @@ class OpenAPIObject(BaseModel):
                 
         out: dict = {}
 
+        if len(servers) > 1:
+            raise ValueError("Per CueCode restrictions, each unique path must have one and only one server")
+
         for server in servers:
             out[(server.uuid.int, server.url + path)] = {
             'type': 'function',
