@@ -23,7 +23,7 @@ jobs:
       # Label used to access the service container
       postgres:
         # Docker Hub image
-        image: postgres
+        image: pgvector/pgvector:0.8.0-pg17
         # Provide the password for postgres
         env:
           POSTGRES_PASSWORD: postgres
@@ -38,6 +38,10 @@ jobs:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
     steps:
+
+      - name: Install Dbmate
+        run: sudo curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64 && sudo chmod +x /usr/local/bin/dbmate
+  
       - uses: actions/checkout@v3
 
       - name: Set up Python ${{ env.PYTHON_VERSION }}

@@ -10,14 +10,22 @@ from common.models.openapi_server import OpenAPIServer
 from common.models.openapi_spec import OpenAPISpec
 from common.openapi.openapi_schema_adapter import OpenAPISchemaAdapter
 import subprocess
-import jsonref
 from uuid import UUID
 
-from common.database_engine import DBEngine
-from common.models.openapi_spec import OpenAPISpec
-from .openapi import OpenAPIObject
-from openapi_spec_validator import validate
+from jsonref import JsonRef  # pylint: disable = import-error
 import jsonref
+
+from common.database_engine import DBEngine
+from common.models.openapi_entity import OpenAPIEntity
+from common.models.openapi_path import OpenAPIPath
+from common.models.openapi_server import OpenAPIServer
+from common.models.openapi_spec import OpenAPISpec
+from common.openapi.openapi_schema_adapter import OpenAPISchemaAdapter
+from configuration.openapi_parsing import make_oa_servers_from_json
+
+from .openapi import OpenAPIObject
+
+from openapi_spec_validator import validate # This
 
 db_engine_for_workaround = DBEngine()  # would be managed in dramatiq actor code
 # if workaround to avoid Dramatiq fails.
@@ -113,13 +121,15 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
 
     print(openapi_repr)
 
+
 def fix_empty_schemas(d: dict) -> dict:
     for k, v in d.items():
         if isinstance(v, dict):
             fix_empty_schemas(v)
-        elif k == 'schema' and isinstance(v, list) and not v:
+        elif k == "schema" and isinstance(v, list) and not v:
             d[k] = {}
     return d
+
 
 def fix_broken_security(d: dict) -> dict:
     for k, v in d.items():
@@ -130,21 +140,27 @@ def fix_broken_security(d: dict) -> dict:
                 v.remove({})
     return d
 
+
 def format_convert(input: str) -> dict:
     """Format OpenAPI to JSON and convert OpenAPI 3.0 spec to OpenAPI 3.1"""
-    
+
     result = subprocess.run(
         ["node", "../../node_modules/openapi-format-wrapper"],
-        input=input, text=True, capture_output=True
+        input=input,
+        text=True,
+        capture_output=True,
     )
 
     if result.returncode != 0:
         raise subprocess.CalledProcessError(
-            result.returncode, 
-            ["node", "node_modules/openapi-format-wrapper", 
-            result.stdout, result.stderr]
+            result.returncode,
+            [
+                "node",
+                "node_modules/openapi-format-wrapper",
+                result.stdout,
+                result.stderr,
+            ],
         )
-
 
     spec = fix_empty_schemas(jsonref.loads(result.stdout))
     spec = fix_broken_security(spec)
