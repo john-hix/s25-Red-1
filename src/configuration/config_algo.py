@@ -1,6 +1,9 @@
 """The main driver for the CueCode configuration algorithm"""
-from configuration.openapi_parsing import make_oa_servers_from_json
-from jsonref import JsonRef #pylint: disable = import-error
+
+import subprocess
+from uuid import UUID
+
+from jsonref import JsonRef  # pylint: disable = import-error
 
 from common.database_engine import DBEngine
 from common.models.openapi_entity import OpenAPIEntity
@@ -8,11 +11,8 @@ from common.models.openapi_path import OpenAPIPath
 from common.models.openapi_server import OpenAPIServer
 from common.models.openapi_spec import OpenAPISpec
 from common.openapi.openapi_schema_adapter import OpenAPISchemaAdapter
-import subprocess
-from uuid import UUID
+from configuration.openapi_parsing import make_oa_servers_from_json
 
-from common.database_engine import DBEngine
-from common.models.openapi_spec import OpenAPISpec
 from .openapi import OpenAPIObject
 
 # from openapi_spec_validator import validate # This
@@ -44,32 +44,32 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
     make_oa_servers_from_json(oa_servers, spec_json)
 
     # parallel over Schema Object in OpenAPI spec
-        # parallel over HTTP verb in Path OpenAPI spec object
-            # Schema object has x-cuecode-exclude? Yes then
-                # next item in loop
-            # Initialize new OpenApiEntity object
-            
-            # Schema object has x-cuecode-prompt? Yes then
-                # Save x-cuecode-prompt to OpenApiEntity .nounPrompt
-            # else
-                # Save Schema Object name to OpenApiEntity .nounPrompt
-            
-            # Call Ollama for embedding of nounPrompt
+    # parallel over HTTP verb in Path OpenAPI spec object
+    # Schema object has x-cuecode-exclude? Yes then
+    # next item in loop
+    # Initialize new OpenApiEntity object
+
+    # Schema object has x-cuecode-prompt? Yes then
+    # Save x-cuecode-prompt to OpenApiEntity .nounPrompt
+    # else
+    # Save Schema Object name to OpenApiEntity .nounPrompt
+
+    # Call Ollama for embedding of nounPrompt
 
     # parallel over Schema Object in OpenAPI spec
 
     # UPSERT entity list to PostgreSQL (but do not commit transactinon)
 
     # Parallel over Path Object in OpenAPI spec
-        # Iterate over HTTP verb in Path object
-            # Path object has x-cuecode-exclude? Yes then
-                # next item in loop
-            # Initialize new OpenApiPath object
-            # Path object has x-cuecode-prompt? Yes then
-                # Save x-cuecode-prompt to OpenApiPath .selectionPrompt
-            # else
-                # Save Schema Object name to OpenApiPath .selectionPrompt
-            # Call Ollama for embedding of selectionPrompt
+    # Iterate over HTTP verb in Path object
+    # Path object has x-cuecode-exclude? Yes then
+    # next item in loop
+    # Initialize new OpenApiPath object
+    # Path object has x-cuecode-prompt? Yes then
+    # Save x-cuecode-prompt to OpenApiPath .selectionPrompt
+    # else
+    # Save Schema Object name to OpenApiPath .selectionPrompt
+    # Call Ollama for embedding of selectionPrompt
 
     # UPSERT endpoint list to PostgreSQL (but do not commit transactinon)
 
@@ -97,20 +97,20 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
     formatted_openapi_spec = format_convert(openapi_spec)
 
     openapi_repr = OpenAPIObject.from_formatted_json(
-        UUID(openapi_spec_id), 
-        session, 
-        formatted_openapi_spec
+        UUID(openapi_spec_id), session, formatted_openapi_spec
     )
 
     print(openapi_repr)
+
 
 def fix_empty_schemas(d: dict) -> dict:
     for k, v in d.items():
         if isinstance(v, dict):
             fix_empty_schemas(v)
-        elif k == 'schema' and isinstance(v, list) and not v:
+        elif k == "schema" and isinstance(v, list) and not v:
             d[k] = {}
     return d
+
 
 def fix_broken_security(d: dict) -> dict:
     for k, v in d.items():
@@ -121,21 +121,27 @@ def fix_broken_security(d: dict) -> dict:
                 v.remove({})
     return d
 
+
 def format_convert(input: str) -> dict:
     """Format OpenAPI to JSON and convert OpenAPI 3.0 spec to OpenAPI 3.1"""
-    
+
     result = subprocess.run(
         ["node", "../../node_modules/openapi-format-wrapper"],
-        input=input, text=True, capture_output=True
+        input=input,
+        text=True,
+        capture_output=True,
     )
 
     if result.returncode != 0:
         raise subprocess.CalledProcessError(
-            result.returncode, 
-            ["node", "node_modules/openapi-format-wrapper", 
-            result.stdout, result.stderr]
+            result.returncode,
+            [
+                "node",
+                "node_modules/openapi-format-wrapper",
+                result.stdout,
+                result.stderr,
+            ],
         )
-
 
     spec = fix_empty_schemas(jsonref.loads(result.stdout))
     spec = fix_broken_security(spec)

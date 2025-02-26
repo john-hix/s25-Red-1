@@ -1,10 +1,14 @@
 """Validator for OpenAPI schema
 """
+
 import os
 from uuid import uuid4
+
 from openapi_spec_validator import validate
 from openapi_spec_validator.readers import read_from_filename
+
 from common.models.openapi_spec import OpenAPISpec
+
 
 def validate_openapi_spec(spec: OpenAPISpec, temp_file_dir="/tmp"):
     """Raises an error if the OpenAPI spec text is not a valid OpenAPI spec."""

@@ -1,27 +1,32 @@
 """OpenAPI 3.1 Object for creating function calls and storing API info in postgres
 Docs from https://swagger.io/specification"""
 
-from typing import List, Optional, cast, Any, Callable
-from typing_extensions import Self
 import json
-
-from pydantic import BaseModel, ConfigDict, Field, AliasGenerator, field_validator, model_validator, validator # type: ignore
-from pydantic.alias_generators import to_camel, to_snake # type: ignore
-
-from uuid import uuid4, uuid5, UUID, NAMESPACE_URL
-
 from collections import defaultdict
 from contextvars import ContextVar
-from common.models import openapi_server, openapi_entity
+from typing import Any, Callable, List, Optional, cast
+from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
+from pydantic import (  # type: ignore
+    AliasGenerator,
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_validator,
+    validator,
+)
+from pydantic.alias_generators import to_camel, to_snake  # type: ignore
 from sqlalchemy import select
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm.util import identity_key
+from typing_extensions import Self
+
+from common.models import openapi_entity, openapi_server
 
 # context_session: ContextVar = ContextVar(name="session")
 
 # context_relationships: ContextVar = ContextVar(name="relationships")
-
 
 
 config_info: dict = defaultdict(lambda: defaultdict(dict))
@@ -36,7 +41,7 @@ class ContactObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -60,7 +65,7 @@ class LicenseObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -86,7 +91,7 @@ class InfoObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -117,11 +122,9 @@ class InfoObject(BaseModel):
     license_: LicenseObject | None = None
     """The license information for the exposed API"""
 
-    
-
 
 class ServerVariableObject(BaseModel):
-    """An object representing a Server Variable 
+    """An object representing a Server Variable
     for server URL template substitution."""
 
     model_config = ConfigDict(
@@ -130,7 +133,7 @@ class ServerVariableObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -153,7 +156,6 @@ class ServerVariableObject(BaseModel):
     MAY be used for rich text representation."""
 
 
-
 class ServerObject(BaseModel):
     """An object representing a Server."""
 
@@ -163,11 +165,9 @@ class ServerObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
-
-    
 
     url: str
     """REQUIRED. A URL to the target host. 
@@ -182,12 +182,12 @@ class ServerObject(BaseModel):
     uuid: UUID
     """a unique UUID for storing in the database"""
 
-    @validator('uuid', always=True)
+    @validator("uuid", always=True)
     @classmethod
     def validate_uuid(cls, value, values):
         return uuid5(namespace=uuid.NAMESPACE_URL, name=values["url"])
 
-    @validator('oas_uuid', always=True)
+    @validator("oas_uuid", always=True)
     @classmethod
     def validate_oas_uuid(cls, value):
         return openapi_spec_id.get()
@@ -201,11 +201,13 @@ class ServerObject(BaseModel):
     """A map between a variable name and its value. 
     The value is used for substitution in the server's URL template."""
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def finish(self) -> Self:
         session: scoped_session = config_info[openapi_spec_id.get()]["session"]
-        
-        db_object = openapi_server.OpenAPIServer(openapi_server_id=self.uuid, spec_id=self.oas_uuid)
+
+        db_object = openapi_server.OpenAPIServer(
+            openapi_server_id=self.uuid, spec_id=self.oas_uuid
+        )
         if session.query(db_object).scalar() is None:
             session.add(db_object)
         return self
@@ -213,14 +215,14 @@ class ServerObject(BaseModel):
 
 class ExternalDocumentationObject(BaseModel):
     """Allows referencing an external resource for extended documentation"""
-    
+
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
             validation_alias=to_snake,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -239,32 +241,32 @@ class ParameterObject(BaseModel):
 
     A unique parameter is defined by a combination of a name and location.
 
-    See [Appendix E](https://swagger.io/specification/#appendix-e-percent-encoding-and-form-media-types) 
-    for a detailed examination of percent-encoding concerns, 
-    including interactions with the 
+    See [Appendix E](https://swagger.io/specification/#appendix-e-percent-encoding-and-form-media-types)
+    for a detailed examination of percent-encoding concerns,
+    including interactions with the
     application/x-www-form-urlencoded query string format.
-    
+
     # Parameter Locations
 
     There are four possible parameter locations specified by the in field:
 
-        path - Used together with Path Templating, where the parameter value is 
-            actually part of the operation's URL. 
-            This does not include the host or base path of the API. 
+        path - Used together with Path Templating, where the parameter value is
+            actually part of the operation's URL.
+            This does not include the host or base path of the API.
             For example, in /items/{itemId}, the path parameter is itemId.
-        query - Parameters that are appended to the URL. 
+        query - Parameters that are appended to the URL.
             For example, in /items?id=###, the query parameter is id.
-        header - Custom headers that are expected as part of the request. 
+        header - Custom headers that are expected as part of the request.
             Note that RFC7230 states header names are case insensitive.
         cookie - Used to pass a specific cookie value to the API.
 
     # Fixed Fields
 
-    The rules for serialization of the parameter are specified in one of two ways. 
-    Parameter Objects MUST include either a content field or a schema field, 
-    but not both. See Appendix B for a discussion of converting values of 
+    The rules for serialization of the parameter are specified in one of two ways.
+    Parameter Objects MUST include either a content field or a schema field,
+    but not both. See Appendix B for a discussion of converting values of
     various types to string representations.
-    
+
     # Common Fixed Fields
     """
 
@@ -274,7 +276,7 @@ class ParameterObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """These fields MAY be used with either content or schema."""
 
@@ -326,16 +328,23 @@ class ParameterObject(BaseModel):
             noun_prompt = self.description
         if self.description is None:
             noun_prompt = self.name
-        if session.execute(
-            select(openapi_entity.OpenAPIEntity)
-            .where(openapi_entity.OpenAPIEntity.noun_prompt == noun_prompt)
-        ).scalar() is None:
-            session.add(openapi_entity.OpenAPIEntity(
-                openapi_entity_id=uuid4(),
-                contained_in_oa_spec_id=openapi_spec_id.get(),
-                noun_prompt=noun_prompt
-            ))
+        if (
+            session.execute(
+                select(openapi_entity.OpenAPIEntity).where(
+                    openapi_entity.OpenAPIEntity.noun_prompt == noun_prompt
+                )
+            ).scalar()
+            is None
+        ):
+            session.add(
+                openapi_entity.OpenAPIEntity(
+                    openapi_entity_id=uuid4(),
+                    contained_in_oa_spec_id=openapi_spec_id.get(),
+                    noun_prompt=noun_prompt,
+                )
+            )
         return self
+
 
 class ParameterObjectSchema(ParameterObject):
     model_config = ConfigDict(
@@ -344,22 +353,23 @@ class ParameterObjectSchema(ParameterObject):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
 
     style: str
+
     @model_validator(mode="before")
     def validate_style(cls, values):
-        if not 'style' in data:
+        if not "style" in data:
             if values["in"] == "query" or "cookie":
                 values["style"] = "form"
             elif values["in"] == "path" or "header":
-                values["style"] =  "simple"
-    
+                values["style"] = "simple"
+
     explode: bool = False
 
-    allow_reserved: bool = False        
-        
+    allow_reserved: bool = False
+
     schema_: dict[str, Any] | None = Field(default=None, alias="schema")
     """Schema for parameters"""
 
@@ -375,21 +385,20 @@ class ParameterObjectContent(ParameterObject):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     content: dict[str, "MediaTypeObject"] | None = None
-    
 
 
 class DiscriminatorObject(BaseModel):
-    """When request bodies or response payloads may be one of a number of 
-    different schemas, a Discriminator Object gives a hint about the expected 
-    schema of the document. This hint can be used to aid in serialization, 
-    deserialization, and validation. The Discriminator Object does this by 
-    implicitly or explicitly associating the possible values of a named property 
+    """When request bodies or response payloads may be one of a number of
+    different schemas, a Discriminator Object gives a hint about the expected
+    schema of the document. This hint can be used to aid in serialization,
+    deserialization, and validation. The Discriminator Object does this by
+    implicitly or explicitly associating the possible values of a named property
     with alternative schemas.
 
-    Note that discriminator MUST NOT change the validation outcome of the 
+    Note that discriminator MUST NOT change the validation outcome of the
     schema."""
 
     model_config = ConfigDict(
@@ -398,7 +407,7 @@ class DiscriminatorObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -415,8 +424,8 @@ class DiscriminatorObject(BaseModel):
 class XMLObject(BaseModel):
     """A metadata object that allows for more fine-tuned XML model definitions.
 
-    When using arrays, XML element names are not inferred 
-    (for singular/plural forms) and the name field SHOULD be used to add that 
+    When using arrays, XML element names are not inferred
+    (for singular/plural forms) and the name field SHOULD be used to add that
     information."""
 
     model_config = ConfigDict(
@@ -425,7 +434,7 @@ class XMLObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -456,8 +465,6 @@ class XMLObject(BaseModel):
     (outside the items)."""
 
 
-
-
 class SchemaObject(BaseModel):
     """https://swagger.io/specification/#schema-object"""
 
@@ -467,7 +474,7 @@ class SchemaObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
 
     discriminator: DiscriminatorObject | None = None
@@ -498,12 +505,12 @@ class SchemaObject(BaseModel):
 
 
 class ExampleObject(BaseModel):
-    """An object grouping an internal or external example value with basic 
-    summary and description metadata. This object is typically used in fields 
-    named examples (plural), and is a referenceable alternative to older example 
+    """An object grouping an internal or external example value with basic
+    summary and description metadata. This object is typically used in fields
+    named examples (plural), and is a referenceable alternative to older example
     (singular) fields that do not support referencing or metadata.
 
-    Examples allow demonstration of the usage of properties, parameters and 
+    Examples allow demonstration of the usage of properties, parameters and
     objects within OpenAPI."""
 
     model_config = ConfigDict(
@@ -512,7 +519,7 @@ class ExampleObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -539,34 +546,35 @@ class ExampleObject(BaseModel):
 
 
 class HeaderObject(BaseModel):
-    """Describes a single header for HTTP responses and for individual parts in 
-    multipart representations; see the relevant Response Object and 
-    Encoding Object documentation for restrictions on which headers can be 
+    """Describes a single header for HTTP responses and for individual parts in
+    multipart representations; see the relevant Response Object and
+    Encoding Object documentation for restrictions on which headers can be
     described.
 
-    The Header Object follows the structure of the Parameter Object, 
-    including determining its serialization strategy based on whether schema or 
+    The Header Object follows the structure of the Parameter Object,
+    including determining its serialization strategy based on whether schema or
     content is present, with the following changes:
 
-    1. `name` MUST NOT be specified, it is given in the corresponding headers 
+    1. `name` MUST NOT be specified, it is given in the corresponding headers
     map.
     2. `in` MUST NOT be specified, it is implicitly in header.
-    3. All traits that are affected by the location MUST be applicable to a 
-    location of header (for example, style). This means that allowEmptyValue and 
-    allowReserved MUST NOT be used, and style, if used, MUST be limited to 
+    3. All traits that are affected by the location MUST be applicable to a
+    location of header (for example, style). This means that allowEmptyValue and
+    allowReserved MUST NOT be used, and style, if used, MUST be limited to
     "simple".
 
     # Fixed Fields
     ## Common Fixed Fields
 
     These fields MAY be used with either content or schema."""
+
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
             validation_alias=to_snake,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -582,7 +590,6 @@ class HeaderObject(BaseModel):
     """Specifies that the header is deprecated and 
     SHOULD be transitioned out of usage."""
 
-    
 
 class HeaderObjectSchema(HeaderObject):
     style: str | None = "simple"
@@ -595,11 +602,12 @@ class HeaderObjectSchema(HeaderObject):
     key-value pairs of the map, see Style Examples. For other data types this 
     field has no effect. The default value is false."""
 
-    schema_: SchemaObject | None = Field(alias='schema', default=None)
+    schema_: SchemaObject | None = Field(alias="schema", default=None)
 
     example: Any
 
     examples: dict[str, ExampleObject] | None = None
+
 
 class HeaderObjectContent(HeaderObject):
     content: dict[str, "MediaTypeObject"] | None = None
@@ -607,22 +615,23 @@ class HeaderObjectContent(HeaderObject):
     The key is the media type and the value describes it. 
     The map MUST only contain one entry."""
 
+
 class EncodingObject(BaseModel):
     """A single encoding definition applied to a single schema property.
-     See Appendix B for a discussion of converting values of various types to 
+     See Appendix B for a discussion of converting values of various types to
      string representations.
 
-    Properties are correlated with multipart parts using the name parameter of 
-    Content-Disposition: form-data, and with application/x-www-form-urlencoded 
-    using the query string parameter names. In both cases, their order is 
+    Properties are correlated with multipart parts using the name parameter of
+    Content-Disposition: form-data, and with application/x-www-form-urlencoded
+    using the query string parameter names. In both cases, their order is
     implementation-defined.
 
-    See Appendix E for a detailed examination of percent-encoding concerns for 
+    See Appendix E for a detailed examination of percent-encoding concerns for
     form media types.
     # Fixed Fields
     ## Common Fixed Fields
 
-    These fields MAY be used either with or without the RFC6570-style 
+    These fields MAY be used either with or without the RFC6570-style
     serialization fields defined in the next section below."""
 
     model_config = ConfigDict(
@@ -631,7 +640,7 @@ class EncodingObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -649,16 +658,16 @@ class EncodingObject(BaseModel):
 
 
 class MediaTypeObject(BaseModel):
-    """Each Media Type Object provides schema and examples for the media type 
+    """Each Media Type Object provides schema and examples for the media type
     identified by its key.
 
-    When example or examples are provided, the example SHOULD match the 
-    specified schema and be in the correct format as specified by the media 
-    type and its encoding. 
-    The example and examples fields are mutually exclusive, 
-    and if either is present it SHALL override any example in the schema. 
-    See [Working With Examples](https://swagger.io/specification/#working-with-examples) 
-    for further guidance regarding the different ways of specifying examples, 
+    When example or examples are provided, the example SHOULD match the
+    specified schema and be in the correct format as specified by the media
+    type and its encoding.
+    The example and examples fields are mutually exclusive,
+    and if either is present it SHALL override any example in the schema.
+    See [Working With Examples](https://swagger.io/specification/#working-with-examples)
+    for further guidance regarding the different ways of specifying examples,
     including non-JSON/YAML values."""
 
     model_config = ConfigDict(
@@ -667,7 +676,7 @@ class MediaTypeObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -688,14 +697,9 @@ class MediaTypeObject(BaseModel):
     the behavior is determined by the default values documented for the 
     Encoding Object."""
 
-
     schema_: dict[str, Any] | None = Field(alias="schema", default=None)
     """The schema defining the content of the request, 
     response, parameter, or header."""
-
-    
-
-
 
 
 class RequestBodyObject(BaseModel):
@@ -707,7 +711,7 @@ class RequestBodyObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -729,17 +733,17 @@ class RequestBodyObject(BaseModel):
 
 
 class LinkObject(BaseModel):
-    """The Link Object represents a possible design-time link for a response. 
-    The presence of a link does not guarantee the caller's ability to 
-    successfully invoke it, rather it provides a known relationship and 
+    """The Link Object represents a possible design-time link for a response.
+    The presence of a link does not guarantee the caller's ability to
+    successfully invoke it, rather it provides a known relationship and
     traversal mechanism between responses and other operations.
 
-    Unlike dynamic links (i.e. links provided in the response payload), 
-    the OAS linking mechanism does not require link information in the runtime 
+    Unlike dynamic links (i.e. links provided in the response payload),
+    the OAS linking mechanism does not require link information in the runtime
     response.
 
-    For computing links and providing instructions to execute them, 
-    a runtime expression is used for accessing values in an operation 
+    For computing links and providing instructions to execute them,
+    a runtime expression is used for accessing values in an operation
     and using them as parameters while invoking the linked operation."""
 
     model_config = ConfigDict(
@@ -748,7 +752,7 @@ class LinkObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -770,7 +774,6 @@ class LinkObject(BaseModel):
     """A literal value or {expression} to use as a request body when calling 
     the target operation."""
 
-
     description: str | None = None
     """A description of the link.
     [CommonMark syntax](https://spec.commonmark.org/)
@@ -780,7 +783,7 @@ class LinkObject(BaseModel):
 
 
 class ResponseObject(BaseModel):
-    """Describes a single response from an API operation, 
+    """Describes a single response from an API operation,
     including design-time, static links to operations based on the response."""
 
     model_config = ConfigDict(
@@ -789,7 +792,7 @@ class ResponseObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -817,6 +820,8 @@ class ResponseObject(BaseModel):
 
 
 SecurityRequirementObjects = List[dict[str, List[str]]]
+
+
 class OperationObject(BaseModel):
     """Describes a single API operation on a path."""
 
@@ -826,7 +831,7 @@ class OperationObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -872,12 +877,12 @@ class OperationObject(BaseModel):
     In other cases where the HTTP spec is vague (such as GET, HEAD and DELETE), 
     requestBody is permitted but does not have well-defined semantics and 
     SHOULD be avoided if possible."""
-  
+
     responses: dict[str, ResponseObject] | None = None
     """The list of possible responses as they are returned from executing this 
     operation."""
 
-    callbacks: dict[str, dict[object, 'PathItemObject']] | None = None
+    callbacks: dict[str, dict[object, "PathItemObject"]] | None = None
     """A map of possible out-of band callbacks related to the parent operation. 
     The key is a unique identifier for the Callback Object. 
     Each value in the map is a Callback Object that describes a request that 
@@ -904,20 +909,20 @@ class OperationObject(BaseModel):
 
     x_cuecode: str | None = Field(alias="x-cuecode", default=None)
 
+
 class PathItemObject(BaseModel):
-    """Describes the operations available on a single path. 
-    A Path Item MAY be empty, due to 
-    [ACL constraints](https://swagger.io/specification/#security-filtering). 
-    The path itself is still exposed to the documentation viewer 
+    """Describes the operations available on a single path.
+    A Path Item MAY be empty, due to
+    [ACL constraints](https://swagger.io/specification/#security-filtering).
+    The path itself is still exposed to the documentation viewer
     but they will not know which operations and parameters are available."""
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
-            serialization_alias=to_camel
+            validation_alias=to_snake, serialization_alias=to_camel
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -980,24 +985,25 @@ class PathItemObject(BaseModel):
 
     x_cuecode: str | None = Field(alias="x-cuecode", default=None)
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def finish(self) -> Self:
         # TODO: After validation for Path Object
         return self
-        
+
+
 context_tag_uuids: ContextVar[dict] = ContextVar(name="tag_uuids")
 context_tags: ContextVar[dict] = ContextVar(name="tags")
+
 
 class TagObject(BaseModel):
     """Tag Object"""
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
-            serialization_alias=to_camel
+            validation_alias=to_snake, serialization_alias=to_camel
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     name: str
     """REQUIRED. The name of the tag."""
@@ -1012,15 +1018,15 @@ class TagObject(BaseModel):
 
     openapi_entity_id: UUID = Field(default_factory=lambda: uuid4())
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def finish(self) -> Self:
-        
+
         # tag_noun_prompt=self.x_cuecode
         # if tag_noun_prompt is None:
         #     tag_noun_prompt = self.description
         # if tag_noun_prompt is None:
         #     tag_noun_prompt = self.name
-        
+
         # session: scoped_session = context_session.get()
         # entity = openapi_entity.OpenAPIEntity(
         #     openapi_entity_id = self.openapi_entity_id,
@@ -1039,7 +1045,6 @@ class TagObject(BaseModel):
         return self
 
 
-
 class OAuthFlowObject(BaseModel):
     """Individual OAuth Flow Object"""
 
@@ -1049,7 +1054,7 @@ class OAuthFlowObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
 
     authorization_url: str | None
@@ -1084,15 +1089,13 @@ class OAuthFlowsObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
 
     implicit: OAuthFlowObject | None = None
     password: OAuthFlowObject | None = None
     client_credentials: OAuthFlowObject | None = None
     authorization_code: OAuthFlowObject | None = None
-
-
 
 
 class SecuritySchemeObject(BaseModel):
@@ -1104,7 +1107,7 @@ class SecuritySchemeObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
 
     type: str
@@ -1112,7 +1115,7 @@ class SecuritySchemeObject(BaseModel):
     'mutualTLS', 'oath2', 'openIdConnect'."""
 
     description: str | None = None
-    
+
     name: str | None = None
     """only applies to apiKey. REQUIRED. 
     The name of the header, query or cookie parameter to be used."""
@@ -1144,8 +1147,9 @@ class SecuritySchemeObject(BaseModel):
     This MUST be in the form of a URL. 
     The OpenID Connect standard requires the use of TLS."""
 
+
 class ComponentsObject(BaseModel):
-    """Components Object Removing this might be beneficial, 
+    """Components Object Removing this might be beneficial,
     since references are already resolved. Testing needed."""
 
     model_config = ConfigDict(
@@ -1154,7 +1158,7 @@ class ComponentsObject(BaseModel):
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
 
     schemas: dict[str, SchemaObject] | None = None
@@ -1165,38 +1169,45 @@ class ComponentsObject(BaseModel):
     headers: dict[str, HeaderObject] | None = None
     security_schemes: dict[str, SecuritySchemeObject] | None = None
 
+
 openapi_spec_id: ContextVar = ContextVar(name="openapi_spec_id")
 """generate a new OpenAPI Spec UUID for storing in the database"""
 
+
 class OpenAPIObject(BaseModel):
     """Deserialized OpenAPI 3.1 Specification"""
+
     openapi_spec_uuid: UUID
 
     db_session: scoped_session
 
-    @model_validator(mode='wrap')
+    @model_validator(mode="wrap")
     @classmethod
     def validate_model(cls, values, handler):
         if values["servers"] is None or values["servers"].empty():
             values["servers"] = [
                 ServerObject(
-                    url = "/",
+                    url="/",
                     description=None,
                     variables=None,
-                    uuid = uuid5(namespace=NAMESPACE_URL, name="/"),
-                    oas_uuid=id.get()
+                    uuid=uuid5(namespace=NAMESPACE_URL, name="/"),
+                    oas_uuid=id.get(),
                 )
             ]
 
         try:
             spec_id = values["openapi_spec_id"]
         except KeyError:
-            raise ValueError("openapi_spec_id must be passed first as a `uuid.UUID` object")  
-            
+            raise ValueError(
+                "openapi_spec_id must be passed first as a `uuid.UUID` object"
+            )
+
         try:
-            session = values["db_session"] 
+            session = values["db_session"]
         except KeyError:
-            raise ValueError("db_session must be passed as the second positional keyword")
+            raise ValueError(
+                "db_session must be passed as the second positional keyword"
+            )
 
         id_token = openapi_spec_id.set(values["openapi_spec_uuid"])
         config_info[spec_id]["session"] = session
@@ -1209,15 +1220,12 @@ class OpenAPIObject(BaseModel):
             openapi_spec_id.reset(id_token)
             # tag_uuids_token.reset(tag_uuids_token)
 
-        
-
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
-            serialization_alias=to_camel
+            validation_alias=to_snake, serialization_alias=to_camel
         ),
         populate_by_name=True,
-        extra="allow"
+        extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -1264,13 +1272,13 @@ class OpenAPIObject(BaseModel):
     @staticmethod
     def _gen_func(
         servers: List[ServerObject],
-        path: str, 
-        operation: OperationObject, 
-        operation_name: str
+        path: str,
+        operation: OperationObject,
+        operation_name: str,
     ) -> dict:
         if operation.servers is not None:
             servers = operation.servers
-        
+
         func_name = path + "+" + operation_name
         func_description = operation.x_cuecode
         if func_description is None:
@@ -1282,7 +1290,7 @@ class OpenAPIObject(BaseModel):
         required = []
         if operation.parameters is not None:
             for param in operation.parameters:
-                
+
                 if not isinstance(param, ParameterObjectSchema):
                     continue
 
@@ -1292,30 +1300,25 @@ class OpenAPIObject(BaseModel):
                 param_info: dict = {}
                 if param.schema_ is not None:
                     param_info = param.schema_
-                         
-                if param_description is not None:
-                    param_info['description'] = param_description
-                if param.examples is not None:
-                    param_info['examples'] = param.examples
-            
 
-                param_name = param.in_ + '/' + param.name            
+                if param_description is not None:
+                    param_info["description"] = param_description
+                if param.examples is not None:
+                    param_info["examples"] = param.examples
+
+                param_name = param.in_ + "/" + param.name
                 params[param_name] = param_info
-                
+
                 if param.required:
                     required.append(param_name)
-        
+
         if operation.request_body is not None:
             request_body_required = False
             if operation.request_body.required:
                 request_body_required = True
                 required.append("requestBody")
 
-            
-
             one_of: dict = {}
-
-            
 
             for k, v in operation.request_body.content.items():
                 param_info = {}
@@ -1323,36 +1326,26 @@ class OpenAPIObject(BaseModel):
                     param_info = v.schema_
 
                 one_of[k] = param_info
-            
-            request_body: dict = {
-                "requestBody": {
-                    "type": "object",
-                    "oneOf": one_of
-                }
-            }
-                
+
+            request_body: dict = {"requestBody": {"type": "object", "oneOf": one_of}}
+
         out: dict = {}
 
         for server in servers:
             out[(server.uuid.int, server.url + path)] = {
-            'type': 'function',
-            'function': {
-                'name': server.url + func_name,
-                'description': func_description,
-                'parameters': {
-                    'type': 'object',
-                    'properties': {
-                        **params,
-                        **request_body
-                    }
+                "type": "function",
+                "function": {
+                    "name": server.url + func_name,
+                    "description": func_description,
+                    "parameters": {
+                        "type": "object",
+                        "properties": {**params, **request_body},
+                    },
+                    "required": required,
                 },
-                'required': required
             }
-        }
 
         return out
-
-
 
     def generate_tools(self) -> dict[int, list]:
         """generate function calls for the api"""
@@ -1364,7 +1357,8 @@ class OpenAPIObject(BaseModel):
         server_stack = [self.servers]
 
         for path, path_item in self.paths.items():
-            if path_item.servers is not None: server_stack.append(path_item.servers)
+            if path_item.servers is not None:
+                server_stack.append(path_item.servers)
             if path_item.get is not None:
                 result = self._gen_func(server_stack[-1], path, path_item.get, "get")
                 for k, v in result.items():
@@ -1382,14 +1376,15 @@ class OpenAPIObject(BaseModel):
                 for k, v in result.items():
                     out2[k].append(v)
             if path_item.patch is not None:
-                result = self._gen_func(server_stack[-1], path, path_item.patch, "patch")
+                result = self._gen_func(
+                    server_stack[-1], path, path_item.patch, "patch"
+                )
                 for k, v in result.items():
                     out2[k].append(v)
             if path_item.trace is not None:
-                result = self._gen_func(server_stack[-1], path, path_item.trace, "trace")
+                result = self._gen_func(
+                    server_stack[-1], path, path_item.trace, "trace"
+                )
                 for k, v in result.items():
                     out2[k].append(v)
         return out2
-
-
-
