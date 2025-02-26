@@ -1,4 +1,4 @@
-import os
+"""Blueprint for the CueCode Dev Portal"""
 import uuid
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -11,6 +11,7 @@ from common.models.base import db
 
 
 class OpenAPISpecUploadForm(FlaskForm):
+    """The form for receiving OpenAPI specification files"""
     spec_file = FileField("Upload OpenAPI Specification")
     submit = SubmitField("Upload")
 
