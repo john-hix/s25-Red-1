@@ -186,3 +186,5 @@ package-lock.json
 
 #locally installed node modules
 node_modules/
+#cuecode specifics
+## docker database
