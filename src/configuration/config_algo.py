@@ -14,7 +14,7 @@ from uuid import UUID
 
 from common.database_engine import DBEngine
 from common.models.openapi_spec import OpenAPISpec
-from openapi import OpenAPIObject
+from .openapi import OpenAPIObject
 from openapi_spec_validator import validate
 import jsonref
 

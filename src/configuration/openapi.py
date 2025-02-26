@@ -5,16 +5,16 @@ from typing import List, Optional, cast, Any, Callable
 from typing_extensions import Self
 import json
 
-from pydantic import BaseModel, ConfigDict, Field, AliasGenerator, field_validator, model_validator, validator
-from pydantic.alias_generators import to_camel, to_snake
+from pydantic import BaseModel, ConfigDict, Field, AliasGenerator, field_validator, model_validator, validator # type: ignore
+from pydantic.alias_generators import to_camel, to_snake # type: ignore
 
 from uuid import uuid4, uuid5, UUID, NAMESPACE_URL
 
 from collections import defaultdict
 from contextvars import ContextVar
-from common import openapi_server, openapi_entity
+from common.models import openapi_server, openapi_entity
 
-from sqlalchemy import create_engine, select
+from sqlalchemy import select
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm.util import identity_key
 
@@ -1262,9 +1262,9 @@ class OpenAPIObject(BaseModel):
     components: ComponentsObject | None = None
 
     @staticmethod
-    def from_formatted_json(spec_id: UUID, db_session: scoped_session, data: dict):
+    def from_formatted_json(spec_id: UUID, db_session: scoped_session, base_url: str, data: dict):
         """create openapi object from json"""
-        return OpenAPIObject(**data)
+        return OpenAPIObject(openapi_spec_uuid=spec_id, db_session=db_session, base_url=base_url, **data)
 
     def session_commit(self) -> None:
         self.db_session.commit()
