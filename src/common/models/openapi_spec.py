@@ -5,10 +5,10 @@ import uuid
 from sqlalchemy import Boolean, Column, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 
-from .base import Base
+from .base import Base, db
 
 
-class OpenAPISpec(Base):  # pylint: disable=too-few-public-methods
+class OpenAPISpec(db.Model):  # pylint: disable=too-few-public-methods
     """Module for the class that represents the OpenAPI spec and its CueCode config"""
 
     __tablename__ = "openapi_spec"
