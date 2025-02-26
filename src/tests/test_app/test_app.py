@@ -15,11 +15,7 @@ from app import create_app  # type: ignore
 def app():
     """Create the entire Flask application"""
     flask_app = create_app()
-    flask_app.config.update(
-        {
-            "TESTING": True,
-        }
-    )
+    flask_app.config.update({"TESTING": True, "SECRET_KEY": "neededForTheForms"})
 
     # other setup can go here,
     # such as setting up Postgres
