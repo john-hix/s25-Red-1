@@ -18,7 +18,6 @@ def create_app():
 
     app = Flask(__name__)
     app.config.from_object(FlaskConfig())
-    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "your-default-secret-key")
 
     app.config["SQLALCHEMY_DATABASE_URI"] = app_config.SQLALCHEMY_DATABASE_URI
     db.init_app(app)
