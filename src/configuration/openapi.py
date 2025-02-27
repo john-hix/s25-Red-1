@@ -2,18 +2,6 @@
 Docs from https://swagger.io/specification"""
 
 import json
-<<<<<<< HEAD
-
-from pydantic import BaseModel, ConfigDict, Field, AliasGenerator, field_validator, model_validator, validator # type: ignore
-from pydantic.alias_generators import to_camel, to_snake # type: ignore
-
-from uuid import uuid4, uuid5, UUID, NAMESPACE_URL
-
-from collections import defaultdict
-from contextvars import ContextVar
-from common.models import openapi_server, openapi_entity
-
-=======
 from collections import defaultdict
 from contextvars import ContextVar
 from typing import Any, Callable, List, Optional, cast
@@ -29,7 +17,6 @@ from pydantic import (  # type: ignore
     validator,
 )
 from pydantic.alias_generators import to_camel, to_snake  # type: ignore
->>>>>>> config-algo-merge-john-chase-work
 from sqlalchemy import select
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm.util import identity_key
@@ -1194,25 +1181,17 @@ class OpenAPIObject(BaseModel):
 
     db_session: scoped_session
 
-<<<<<<< HEAD
     base_url: str
 
     session_errors_encountered: bool = False
 
     @model_validator(mode='wrap')
-=======
-    @model_validator(mode="wrap")
->>>>>>> config-algo-merge-john-chase-work
     @classmethod
     def validate_model(cls, values, handler):
         if values["servers"] is None or values["servers"].empty():
             values["servers"] = [
                 ServerObject(
-<<<<<<< HEAD
                     url = values["base_url"],
-=======
-                    url="/",
->>>>>>> config-algo-merge-john-chase-work
                     description=None,
                     variables=None,
                     uuid=uuid5(namespace=NAMESPACE_URL, name="/"),
