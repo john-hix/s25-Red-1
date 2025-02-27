@@ -10,6 +10,25 @@ Team Red - Spring 2025
   - z-targz - Chase Wallace - cwall043@odu.edu
 
 
+# Contributing
+
+- One reviewer required for pull requests.
+- Branches named like:
+  - `feat-[feature name]`
+  - `bug-[bug name]`
+  - `tool-[tooling change name]`
+  - `doc-[doc update name]`
+- Merge strategy: rebase and merge, so individual contributions contained in
+  commits are more obvious to graders who review the `main` branch history.
+- Commits titled like:
+  - Prefix with one or more of the following:
+    - `TOOL`: tooling change
+    - `FEAT`: feature change
+    - `FIX`: fix for a bug or other incorrect implementation
+    - `DOC`: documentation update, including code comments
+    - `INFRA`: updates to infrastructure config and/or code
+
+
 # Dev environment
 
 Required software:
