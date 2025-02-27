@@ -12,6 +12,8 @@ from hamcrest import assert_that, contains_string, equal_to
 # pylint: disable-next=import-error
 from app.api import create_blueprint  # type: ignore
 
+API_KEY = "TEST_API_KEY"
+
 
 @pytest.fixture()
 def app():
@@ -45,13 +47,19 @@ def runner(app):
     return app.test_cli_runner()
 
 
-def test_index(client):
-    """Test that the blueprint is registered and serving the index route"""
+def test_index_unauthorized(client):
+    """Test that accessing `/` without an API key returns 401 error"""
     response = client.get("/")
-    print(response.content_type)
-    assert_that(response.content_type, equal_to("application/json"))
+    assert_that(response.status_code, equal_to(401))
+    assert_that(response.json, equal_to({"error": "Unauthorized"}))
+
+
+def test_index_authorized(client):
+    """Test that accessing `/` with a valid API key returns success"""
+    response = client.get("/", headers={"Authorization": API_KEY})
     assert_that(response.status_code, equal_to(200))
-    assert_that(str(response.data), contains_string(("{")))
+    assert_that(response.content_type, equal_to("application/json"))
+    assert_that(response.json, equal_to({"example": "JSON"}))
 
 
 def test_not_found(client):
