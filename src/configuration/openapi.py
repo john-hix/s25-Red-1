@@ -34,6 +34,7 @@ from dataclasses import field
 
 config_info: dict = defaultdict(lambda: defaultdict(dict))
 
+is_test: bool = False
 
 class ContactObject(BaseModel):
     """Contact information for the exposed API."""
@@ -179,16 +180,16 @@ class ServerObject(BaseModel):
     the document containing the Server Object is being served. 
     Variable substitutions will be made when a variable is named in {braces}."""
 
-    _oas_uuid: UUID | None = None
-    _uuid: UUID | None = None
+    oas_uuid: UUID | None = None
+    uuid: UUID | None = None
 
     """The UUID of the containing OpenAPI spec"""
     @model_validator(mode="before")
     def begin(cls, values) -> dict:
-        values["_oas_uuid"] = openapi_spec_id.get()
+        values["oas_uuid"] = openapi_spec_id.get()
         if values.get("url") is None:
             raise ValueError("field url must not be empty")
-        values["_uuid"] = uuid5(namespace=NAMESPACE_URL, name=values["url"])
+        values["uuid"] = uuid5(namespace=NAMESPACE_URL, name=values["url"])
         return values
     
 
@@ -254,6 +255,49 @@ class ExternalDocumentationObject(BaseModel):
     [CommonMark syntax](https://spec.commonmark.org/)
     MAY be used for rich text representation."""
 
+
+# class ParameterObject(BaseModel):
+    
+
+class ExampleObject(BaseModel):
+    """An object grouping an internal or external example value with basic
+    summary and description metadata. This object is typically used in fields
+    named examples (plural), and is a referenceable alternative to older example
+    (singular) fields that do not support referencing or metadata.
+
+    Examples allow demonstration of the usage of properties, parameters and
+    objects within OpenAPI."""
+
+    model_config = ConfigDict(
+        alias_generator=AliasGenerator(
+            validation_alias=to_snake,
+            serialization_alias=to_camel,
+        ),
+        populate_by_name=True,
+        extra="allow",
+    )
+    """This object MAY be extended with Specification Extensions."""
+
+    summary: str | None = None
+    """Short description for the example."""
+
+    description: str | None = None
+    """Long description for the example. 
+    [CommonMark syntax](https://spec.commonmark.org/)
+    MAY be used for rich text representation."""
+
+    # TODO: parse as plaintext string
+    value: object | None = None
+    """Embedded literal example. The value field and externalValue field are 
+    mutually exclusive. To represent examples of media types that cannot 
+    naturally represented in JSON or YAML, use a string value to contain the 
+    example, escaping where necessary."""
+
+    external_value: str | None = None
+    """A URI that identifies the literal example. 
+    This provides the capability to reference examples that cannot easily be 
+    included in JSON or YAML documents. The value field and externalValue field 
+    are mutually exclusive. See the rules for resolving Relative References."""
 
 class ParameterObject(BaseModel):
     """Describes a single operation parameter.
@@ -364,47 +408,6 @@ class ParameterObject(BaseModel):
             )
         return self
 
-class ExampleObject(BaseModel):
-    """An object grouping an internal or external example value with basic
-    summary and description metadata. This object is typically used in fields
-    named examples (plural), and is a referenceable alternative to older example
-    (singular) fields that do not support referencing or metadata.
-
-    Examples allow demonstration of the usage of properties, parameters and
-    objects within OpenAPI."""
-
-    model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            validation_alias=to_snake,
-            serialization_alias=to_camel,
-        ),
-        populate_by_name=True,
-        extra="allow",
-    )
-    """This object MAY be extended with Specification Extensions."""
-
-    summary: str | None = None
-    """Short description for the example."""
-
-    description: str | None = None
-    """Long description for the example. 
-    [CommonMark syntax](https://spec.commonmark.org/)
-    MAY be used for rich text representation."""
-
-    # TODO: parse as plaintext string
-    value: object | None = None
-    """Embedded literal example. The value field and externalValue field are 
-    mutually exclusive. To represent examples of media types that cannot 
-    naturally represented in JSON or YAML, use a string value to contain the 
-    example, escaping where necessary."""
-
-    external_value: str | None = None
-    """A URI that identifies the literal example. 
-    This provides the capability to reference examples that cannot easily be 
-    included in JSON or YAML documents. The value field and externalValue field 
-    are mutually exclusive. See the rules for resolving Relative References."""
-
-class ParameterObjectSchema(ParameterObject):
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
             validation_alias=to_snake,
@@ -414,19 +417,21 @@ class ParameterObjectSchema(ParameterObject):
         extra="allow",
     )
 
-    style: str
+    style: str | None = None
 
     @model_validator(mode="before")
-    def validate_style(cls, values):
-        if not "style" in data:
-            if values["in"] == "query" or "cookie":
-                values["style"] = "form"
-            elif values["in"] == "path" or "header":
-                values["style"] = "simple"
+    def validate_style(cls, values) -> dict:
+        if "schema" in values:
+            if not "style" in values:
+                if values["in"] == "query" or "cookie":
+                    values["style"] = "form"
+                elif values["in"] == "path" or "header":
+                    values["style"] = "simple"
+        return values
 
-    explode: bool = False
+    explode: bool | None = False
 
-    allow_reserved: bool = False
+    allow_reserved: bool | None = False
 
     schema_: dict[str, Any] | None = Field(default=None, alias="schema")
     """Schema for parameters"""
@@ -435,17 +440,8 @@ class ParameterObjectSchema(ParameterObject):
 
     examples: dict[str, ExampleObject] | None = None
 
-
-class ParameterObjectContent(ParameterObject):
-    model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            validation_alias=to_snake,
-            serialization_alias=to_camel,
-        ),
-        populate_by_name=True,
-        extra="allow",
-    )
     content: dict[str, "MediaTypeObject"] | None = None
+
 
 
 class DiscriminatorObject(BaseModel):
@@ -927,6 +923,8 @@ class OperationObject(BaseModel):
     x_cuecode: str | None = Field(alias="x-cuecode", default=None)
 
 
+
+
 class PathItemObject(BaseModel):
     """Describes the operations available on a single path.
     A Path Item MAY be empty, due to
@@ -1204,7 +1202,7 @@ class OpenAPIObject(BaseModel):
 
     session_errors_encountered: bool = False
   
-        
+    is_test: bool = False
 
     @model_validator(mode='before')
     @classmethod
@@ -1282,6 +1280,8 @@ class OpenAPIObject(BaseModel):
 
     @model_validator(mode='after')
     def finish(self) -> Self:
+        is_test = self.is_test
+ 
         if self.base_url is None:
             raise ValueError("_base_url missing")
         if self.openapi_spec_uuid is None:
@@ -1292,18 +1292,19 @@ class OpenAPIObject(BaseModel):
                     url = self.base_url,
                     description=None,
                     variables=None,
-                    _oas_uuid=self.openapi_spec_uuid,
+                    #_oas_uuid=self.openapi_spec_uuid,
                 )
             ]
 
         for server in self.servers:
             SessionHelper.session_add(
                 openapi_server.OpenAPIServer(
-                    openapi_server_id=server._uuid,
+                    openapi_server_id=server.uuid,
                     spec_id = self.openapi_spec_uuid, 
                     url=server.url
                 ), 
-                self.db_session
+                self.db_session,
+                is_test
             )
 
         for pathname, path in self.paths.items():
@@ -1312,12 +1313,14 @@ class OpenAPIObject(BaseModel):
                 openapi_path_id = path_id,
                 spec_id=self.openapi_spec_uuid, 
                 path_templated=pathname
-            ), 
+            )
+
             SessionHelper.session_add(
                 model,
-                self.db_session
+                self.db_session,
+                is_test
             )
-            for http_verb in openapi_operation.HttpVerb:
+            for http_verb in ["GET","POST","PUT","PATCH","DELETE"]:
                 operation: OperationObject = getattr(path, http_verb.lower())
                 if operation is None:
                     continue
@@ -1339,25 +1342,31 @@ class OpenAPIObject(BaseModel):
                     operation_prompt = f"pathname:{http_verb}"
 
                 model = openapi_operation.OpenAPIOperation(
-                    oa_server_id = servers[0]._uuid,
+                    openapi_operation_id = uuid4(),
+                    oa_server_id = servers[0].uuid,
                     oa_path_id = path_id,
                     http_verb = http_verb.upper(),
                     selection_prompt = operation_prompt,
-                    llm_content_gen_tool_cal_spec = self._gen_func(
+                    llm_content_gen_tool_call_spec = self._gen_func(
                         servers=self.servers,
                         path=pathname,
                         operation=operation,
                         operation_name=http_verb
                     )
                 )
+                SessionHelper.session_add(
+                    model,
+                    self.db_session,
+                    is_test
+                )
 
         return self
 
 
     @staticmethod
-    def from_formatted_json(spec_id: UUID, db_session: scoped_session, base_url: str, data: dict):
+    def from_formatted_json(spec_id: UUID, db_session: scoped_session, base_url: str, data: dict, _is_test=False):
         """create openapi object from json"""
-        return OpenAPIObject(openapi_spec_uuid=spec_id, db_session=db_session, base_url=base_url, **data)
+        return OpenAPIObject(openapi_spec_uuid=spec_id, db_session=db_session, base_url=base_url, is_test=_is_test, **data)
 
     def session_commit(self) -> None:
         if self.db_session is not None:
@@ -1385,12 +1394,12 @@ class OpenAPIObject(BaseModel):
         required = []
         if operation.parameters is not None:
             for param in operation.parameters:
-
-                if not isinstance(param, ParameterObjectSchema):
+                
+                if param.schema_ is None:
                     continue
 
                 param_description = param.x_cuecode
-                if param.description is None:
+                if param_description is None:
                     param_description = param.description
                 param_info: dict = {}
                 if param.schema_ is not None:
@@ -1406,7 +1415,7 @@ class OpenAPIObject(BaseModel):
 
                 if param.required:
                     required.append(param_name)
-
+        props: dict = {**params}
         if operation.request_body is not None:
             request_body_required = False
             if operation.request_body.required:
@@ -1423,28 +1432,27 @@ class OpenAPIObject(BaseModel):
                 one_of[k] = param_info
 
             request_body: dict = {"requestBody": {"type": "object", "oneOf": one_of}}
-
+            props.update(**request_body)
         out: dict = {}
 
         if len(servers) > 1:
             raise ValueError("Per CueCode restrictions, each unique path must have one and only one server")
 
         for server in servers:
-            
-            out[(cast(UUID, server._uuid).int, server.url + path)] = {
+            out = {
                 "type": "function",
                 "function": {
-                    "name": server.url + func_name,
+                    "name": server.url.rstrip('/') + func_name,
                     "description": func_description,
                     "parameters": {
                         "type": "object",
-                        "properties": {**params, **request_body},
+                        "properties": props,
                     },
                     "required": required,
                 },
             }
 
-        
+
 
         return out
 

@@ -25,3 +25,4 @@ banned-imports-check-usages = true
 # https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
 [tool.mypy]
 disable_error_code = ["import-untyped", "import-not-found"]
+plugins = ["sqlalchemy.ext.mypy.plugin"]
