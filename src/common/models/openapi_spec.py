@@ -21,3 +21,4 @@ class OpenAPISpec(Base):  # pylint: disable=too-few-public-methods
     )
     spec_text = Column(Text)
     file_name = Column(String)
+    base_url = Column(String)

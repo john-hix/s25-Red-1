@@ -1181,13 +1181,17 @@ class OpenAPIObject(BaseModel):
 
     db_session: scoped_session
 
-    @model_validator(mode="wrap")
+    base_url: str
+
+    session_errors_encountered: bool = False
+
+    @model_validator(mode='wrap')
     @classmethod
     def validate_model(cls, values, handler):
         if values["servers"] is None or values["servers"].empty():
             values["servers"] = [
                 ServerObject(
-                    url="/",
+                    url = values["base_url"],
                     description=None,
                     variables=None,
                     uuid=uuid5(namespace=NAMESPACE_URL, name="/"),
@@ -1208,6 +1212,11 @@ class OpenAPIObject(BaseModel):
             raise ValueError(
                 "db_session must be passed as the second positional keyword"
             )
+
+        try:
+            base_url = values["base_url"]
+        except KeyError:
+            raise ValueError("base_url must be passed as the third positional keyword")
 
         id_token = openapi_spec_id.set(values["openapi_spec_uuid"])
         config_info[spec_id]["session"] = session
@@ -1261,9 +1270,9 @@ class OpenAPIObject(BaseModel):
     components: ComponentsObject | None = None
 
     @staticmethod
-    def from_formatted_json(spec_id: UUID, db_session: scoped_session, data: dict):
+    def from_formatted_json(spec_id: UUID, db_session: scoped_session, base_url: str, data: dict):
         """create openapi object from json"""
-        return OpenAPIObject(**data)
+        return OpenAPIObject(openapi_spec_uuid=spec_id, db_session=db_session, base_url=base_url, **data)
 
     def session_commit(self) -> None:
         self.db_session.commit()
@@ -1331,6 +1340,9 @@ class OpenAPIObject(BaseModel):
 
         out: dict = {}
 
+        if len(servers) > 1:
+            raise ValueError("Per CueCode restrictions, each unique path must have one and only one server")
+
         for server in servers:
             out[(server.uuid.int, server.url + path)] = {
                 "type": "function",
@@ -1344,6 +1356,8 @@ class OpenAPIObject(BaseModel):
                     "required": required,
                 },
             }
+
+        
 
         return out
 
