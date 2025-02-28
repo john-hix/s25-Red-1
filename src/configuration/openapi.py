@@ -12,10 +12,7 @@ from pydantic import (  # type: ignore
     BaseModel,
     ConfigDict,
     Field,
-    field_validator,
     model_validator,
-    validator,
-    SkipValidation
 )
 from pydantic.alias_generators import to_camel, to_snake  # type: ignore
 from sqlalchemy import select
@@ -23,7 +20,12 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm.util import identity_key
 from typing_extensions import Self
 
-from common.models import openapi_entity, openapi_server, openapi_path, openapi_operation
+from common.models import (
+    openapi_entity,
+    openapi_server,
+    openapi_path,
+    openapi_operation,
+)
 from common.session_helper import SessionHelper
 from dataclasses import field
 
@@ -35,6 +37,7 @@ from dataclasses import field
 config_info: dict = defaultdict(lambda: defaultdict(dict))
 
 is_test: bool = False
+
 
 class ContactObject(BaseModel):
     """Contact information for the exposed API."""
@@ -184,17 +187,15 @@ class ServerObject(BaseModel):
     uuid: UUID | None = None
 
     """The UUID of the containing OpenAPI spec"""
+
     @model_validator(mode="before")
-    def begin(cls, values) -> dict:
+    @classmethod
+    def begin(cls, values) -> dict: #pylint: disable=
         values["oas_uuid"] = openapi_spec_id.get()
         if values.get("url") is None:
             raise ValueError("field url must not be empty")
         values["uuid"] = uuid5(namespace=NAMESPACE_URL, name=values["url"])
         return values
-    
-
-    
-    
 
     # @validator("_uuid", always=True)
     # @classmethod
@@ -257,7 +258,7 @@ class ExternalDocumentationObject(BaseModel):
 
 
 # class ParameterObject(BaseModel):
-    
+
 
 class ExampleObject(BaseModel):
     """An object grouping an internal or external example value with basic
@@ -298,6 +299,7 @@ class ExampleObject(BaseModel):
     This provides the capability to reference examples that cannot easily be 
     included in JSON or YAML documents. The value field and externalValue field 
     are mutually exclusive. See the rules for resolving Relative References."""
+
 
 class ParameterObject(BaseModel):
     """Describes a single operation parameter.
@@ -420,6 +422,7 @@ class ParameterObject(BaseModel):
     style: str | None = None
 
     @model_validator(mode="before")
+    @classmethod
     def validate_style(cls, values) -> dict:
         if "schema" in values:
             if not "style" in values:
@@ -441,8 +444,6 @@ class ParameterObject(BaseModel):
     examples: dict[str, ExampleObject] | None = None
 
     content: dict[str, "MediaTypeObject"] | None = None
-
-
 
 class DiscriminatorObject(BaseModel):
     """When request bodies or response payloads may be one of a number of
@@ -923,8 +924,6 @@ class OperationObject(BaseModel):
     x_cuecode: str | None = Field(alias="x-cuecode", default=None)
 
 
-
-
 class PathItemObject(BaseModel):
     """Describes the operations available on a single path.
     A Path Item MAY be empty, due to
@@ -1000,12 +999,10 @@ class PathItemObject(BaseModel):
 
     x_cuecode: str | None = Field(alias="x-cuecode", default=None)
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def finish(self) -> Self:
 
         return self
-
-    
 
 
 context_tag_uuids: ContextVar[dict] = ContextVar("tag_uuids")
@@ -1201,10 +1198,10 @@ class OpenAPIObject(BaseModel):
     base_url: str | None = None
 
     session_errors_encountered: bool = False
-  
+
     is_test: bool = False
 
-    @model_validator(mode='before')
+    @model_validator(mode="before")
     @classmethod
     def validate_model(cls, values):
         try:
@@ -1226,13 +1223,9 @@ class OpenAPIObject(BaseModel):
         except KeyError:
             raise ValueError("base_url must be passed as the third positional keyword")
 
-        
-
-
         id_token = openapi_spec_id.set(spec_id)
         config_info[spec_id]["session"] = session
         return values
-        
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
@@ -1240,8 +1233,7 @@ class OpenAPIObject(BaseModel):
         ),
         populate_by_name=True,
         extra="allow",
-        arbitrary_types_allowed=True
-
+        arbitrary_types_allowed=True,
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -1276,12 +1268,10 @@ class OpenAPIObject(BaseModel):
 
     components: ComponentsObject | None = None
 
-    
-
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def finish(self) -> Self:
         is_test = self.is_test
- 
+
         if self.base_url is None:
             raise ValueError("_base_url missing")
         if self.openapi_spec_uuid is None:
@@ -1289,10 +1279,10 @@ class OpenAPIObject(BaseModel):
         if self.servers is None or not self.servers:
             self.servers = [
                 ServerObject(
-                    url = self.base_url,
+                    url=self.base_url,
                     description=None,
                     variables=None,
-                    #_oas_uuid=self.openapi_spec_uuid,
+                    # _oas_uuid=self.openapi_spec_uuid,
                 )
             ]
 
@@ -1300,31 +1290,27 @@ class OpenAPIObject(BaseModel):
             SessionHelper.session_add(
                 openapi_server.OpenAPIServer(
                     openapi_server_id=server.uuid,
-                    spec_id = self.openapi_spec_uuid, 
-                    url=server.url
-                ), 
+                    spec_id=self.openapi_spec_uuid,
+                    url=server.url,
+                ),
                 self.db_session,
-                is_test
+                is_test,
             )
 
         for pathname, path in self.paths.items():
             path_id: UUID = uuid4()
             model = openapi_path.OpenAPIPath(
-                openapi_path_id = path_id,
-                spec_id=self.openapi_spec_uuid, 
-                path_templated=pathname
+                openapi_path_id=path_id,
+                spec_id=self.openapi_spec_uuid,
+                path_templated=pathname,
             )
 
-            SessionHelper.session_add(
-                model,
-                self.db_session,
-                is_test
-            )
-            for http_verb in ["GET","POST","PUT","PATCH","DELETE"]:
+            SessionHelper.session_add(model, self.db_session, is_test)
+            for http_verb in ["GET", "POST", "PUT", "PATCH", "DELETE"]:
                 operation: OperationObject = getattr(path, http_verb.lower())
                 if operation is None:
                     continue
-                
+
                 servers = operation.servers
                 if servers is None:
                     servers = path.servers
@@ -1342,31 +1328,38 @@ class OpenAPIObject(BaseModel):
                     operation_prompt = f"pathname:{http_verb}"
 
                 model = openapi_operation.OpenAPIOperation(
-                    openapi_operation_id = uuid4(),
-                    oa_server_id = servers[0].uuid,
-                    oa_path_id = path_id,
-                    http_verb = http_verb.upper(),
-                    selection_prompt = operation_prompt,
-                    llm_content_gen_tool_call_spec = self._gen_func(
+                    openapi_operation_id=uuid4(),
+                    oa_server_id=servers[0].uuid,
+                    oa_path_id=path_id,
+                    http_verb=http_verb.upper(),
+                    selection_prompt=operation_prompt,
+                    llm_content_gen_tool_call_spec=self._gen_func(
                         servers=self.servers,
                         path=pathname,
                         operation=operation,
-                        operation_name=http_verb
-                    )
+                        operation_name=http_verb,
+                    ),
                 )
-                SessionHelper.session_add(
-                    model,
-                    self.db_session,
-                    is_test
-                )
+                SessionHelper.session_add(model, self.db_session, is_test)
 
         return self
 
-
     @staticmethod
-    def from_formatted_json(spec_id: UUID, db_session: scoped_session, base_url: str, data: dict, _is_test=False):
+    def from_formatted_json(
+        spec_id: UUID,
+        db_session: scoped_session,
+        base_url: str,
+        data: dict,
+        _is_test=False,
+    ):
         """create openapi object from json"""
-        return OpenAPIObject(openapi_spec_uuid=spec_id, db_session=db_session, base_url=base_url, is_test=_is_test, **data)
+        return OpenAPIObject(
+            openapi_spec_uuid=spec_id,
+            db_session=db_session,
+            base_url=base_url,
+            is_test=_is_test,
+            **data,
+        )
 
     def session_commit(self) -> None:
         if self.db_session is not None:
@@ -1394,7 +1387,7 @@ class OpenAPIObject(BaseModel):
         required = []
         if operation.parameters is not None:
             for param in operation.parameters:
-                
+
                 if param.schema_ is None:
                     continue
 
@@ -1419,7 +1412,6 @@ class OpenAPIObject(BaseModel):
         if operation.request_body is not None:
             request_body_required = False
             if operation.request_body.required:
-                request_body_required = True
                 required.append("requestBody")
 
             one_of: dict = {}
@@ -1436,13 +1428,15 @@ class OpenAPIObject(BaseModel):
         out: dict = {}
 
         if len(servers) > 1:
-            raise ValueError("Per CueCode restrictions, each unique path must have one and only one server")
+            raise ValueError(
+                "Per CueCode restrictions, each unique path must have one and only one server"
+            )
 
         for server in servers:
             out = {
                 "type": "function",
                 "function": {
-                    "name": server.url.rstrip('/') + func_name,
+                    "name": server.url.rstrip("/") + func_name,
                     "description": func_description,
                     "parameters": {
                         "type": "object",
@@ -1452,16 +1446,12 @@ class OpenAPIObject(BaseModel):
                 },
             }
 
-
-
         return out
 
     def generate_tools(self) -> dict[int, list]:
         """generate function calls for the api"""
 
-        out: List[dict] = []
-
-        out2: defaultdict = defaultdict(list)
+        out: defaultdict = defaultdict(list)
         if self.servers is None:
             raise ValueError("servers cannot be None")
 
@@ -1473,29 +1463,30 @@ class OpenAPIObject(BaseModel):
             if path_item.get is not None:
                 result = self._gen_func(server_stack[-1], path, path_item.get, "get")
                 for k, v in result.items():
-                    out2[k].append(v)
+                    out[k].append(v)
             if path_item.post is not None:
                 result = self._gen_func(server_stack[-1], path, path_item.post, "post")
                 for k, v in result.items():
-                    out2[k].append(v)
+                    out[k].append(v)
             if path_item.head is not None:
                 result = self._gen_func(server_stack[-1], path, path_item.head, "head")
                 for k, v in result.items():
-                    out2[k].append(v)
+                    out[k].append(v)
             if path_item.put is not None:
                 result = self._gen_func(server_stack[-1], path, path_item.put, "put")
                 for k, v in result.items():
-                    out2[k].append(v)
+                    out[k].append(v)
             if path_item.patch is not None:
                 result = self._gen_func(
                     server_stack[-1], path, path_item.patch, "patch"
                 )
                 for k, v in result.items():
-                    out2[k].append(v)
+                    out[k].append(v)
             if path_item.trace is not None:
                 result = self._gen_func(
                     server_stack[-1], path, path_item.trace, "trace"
                 )
                 for k, v in result.items():
-                    out2[k].append(v)
-        return out2
+                    out[k].append(v)
+        return out
+

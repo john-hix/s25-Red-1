@@ -17,6 +17,7 @@ mock_sessionmaker.return_value = dummy_session
 
 dummy_scoped_session: scoped_session = scoped_session(mock_sessionmaker)
 
+
 def test_configuration():
     regression_test_dir = get_src_dir() / "tests" / "test_configuration" / "regression"
     output_dir = regression_test_dir / "test_output"
@@ -25,16 +26,16 @@ def test_configuration():
     input_file = regression_test_dir.parent / "data" / "nextcloud-31.json"
     with input_file.open() as file:
         openapi_spec = file.read()
-        formatted_openapi_spec = config_algo.fix_empty_schemas(jsonref.loads(openapi_spec))
+        formatted_openapi_spec = config_algo.fix_empty_schemas(
+            jsonref.loads(openapi_spec)
+        )
         formatted_openapi_spec = config_algo.fix_broken_security(formatted_openapi_spec)
         openapi = OpenAPIObject.from_formatted_json(
             uuid4(),
             dummy_scoped_session,
             "https://example.com/",
             formatted_openapi_spec,
-            True
+            True,
         )
 
     # TODO: Validate results are correct automatically
-
-    

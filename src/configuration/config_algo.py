@@ -1,6 +1,11 @@
 """The main driver for the CueCode configuration algorithm"""
-from configuration.openapi_parsing import make_oa_servers_from_json
-from jsonref import JsonRef #pylint: disable = import-error
+import subprocess
+from uuid import UUID
+
+from jsonref import JsonRef  # pylint: disable = import-error
+import jsonref
+
+from openapi_spec_validator import validate  # This
 
 from common.database_engine import DBEngine
 from common.models.openapi_entity import OpenAPIEntity
@@ -9,23 +14,9 @@ from common.models.openapi_operation import OpenAPIOperation
 from common.models.openapi_server import OpenAPIServer
 from common.models.openapi_spec import OpenAPISpec
 from common.openapi.openapi_schema_adapter import OpenAPISchemaAdapter
-import subprocess
-from uuid import UUID
 
-from jsonref import JsonRef  # pylint: disable = import-error
-import jsonref
-
-from common.database_engine import DBEngine
-from common.models.openapi_entity import OpenAPIEntity
-from common.models.openapi_path import OpenAPIPath
-from common.models.openapi_server import OpenAPIServer
-from common.models.openapi_spec import OpenAPISpec
-from common.openapi.openapi_schema_adapter import OpenAPISchemaAdapter
-from configuration.openapi_parsing import make_oa_servers_from_json
-
+from .openapi_parsing import make_oa_servers_from_json
 from .openapi import OpenAPIObject
-
-from openapi_spec_validator import validate # This
 
 db_engine_for_workaround = DBEngine()  # would be managed in dramatiq actor code
 # if workaround to avoid Dramatiq fails.
@@ -54,32 +45,32 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
     make_oa_servers_from_json(oa_servers, spec_json)
 
     # parallel over Schema Object in OpenAPI spec
-        # parallel over HTTP verb in Path OpenAPI spec object
-            # Schema object has x-cuecode-exclude? Yes then
-                # next item in loop
-            # Initialize new OpenApiEntity object
-            
-            # Schema object has x-cuecode-prompt? Yes then
-                # Save x-cuecode-prompt to OpenApiEntity .nounPrompt
-            # else
-                # Save Schema Object name to OpenApiEntity .nounPrompt
-            
-            # Call Ollama for embedding of nounPrompt
+    # parallel over HTTP verb in Path OpenAPI spec object
+    # Schema object has x-cuecode-exclude? Yes then
+    # next item in loop
+    # Initialize new OpenApiEntity object
+
+    # Schema object has x-cuecode-prompt? Yes then
+    # Save x-cuecode-prompt to OpenApiEntity .nounPrompt
+    # else
+    # Save Schema Object name to OpenApiEntity .nounPrompt
+
+    # Call Ollama for embedding of nounPrompt
 
     # parallel over Schema Object in OpenAPI spec
 
     # UPSERT entity list to PostgreSQL (but do not commit transactinon)
 
     # Parallel over Path Object in OpenAPI spec
-        # Iterate over HTTP verb in Path object
-            # Path object has x-cuecode-exclude? Yes then
-                # next item in loop
-            # Initialize new OpenApiPath object
-            # Path object has x-cuecode-prompt? Yes then
-                # Save x-cuecode-prompt to OpenApiPath .selectionPrompt
-            # else
-                # Save Schema Object name to OpenApiPath .selectionPrompt
-            # Call Ollama for embedding of selectionPrompt
+    # Iterate over HTTP verb in Path object
+    # Path object has x-cuecode-exclude? Yes then
+    # next item in loop
+    # Initialize new OpenApiPath object
+    # Path object has x-cuecode-prompt? Yes then
+    # Save x-cuecode-prompt to OpenApiPath .selectionPrompt
+    # else
+    # Save Schema Object name to OpenApiPath .selectionPrompt
+    # Call Ollama for embedding of selectionPrompt
 
     # UPSERT endpoint list to PostgreSQL (but do not commit transactinon)
 
@@ -103,17 +94,14 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
     # BEGIN Chase's work
     openapi_spec = session.get(OpenAPISpec, openapi_spec_id)
 
-    #Needed in the event no server is specified in the servers array
+    # Needed in the event no server is specified in the servers array
     base_server_url = openapi_spec.base_url
 
     # Update OpenAPI to v3.1, validate spec, and fix empty schemas
     formatted_openapi_spec = format_convert(openapi_spec)
 
     openapi_repr = OpenAPIObject.from_formatted_json(
-        UUID(openapi_spec_id), 
-        session,
-        base_server_url,
-        formatted_openapi_spec
+        UUID(openapi_spec_id), session, base_server_url, formatted_openapi_spec
     )
 
     if not openapi_repr.session_errors_encountered:
@@ -123,6 +111,8 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
 
 
 def fix_empty_schemas(d: dict) -> dict:
+    """Fixes incorrect json format where lists are used instead of empty 
+    objects"""
     for k, v in d.items():
         if isinstance(v, dict):
             fix_empty_schemas(v)
@@ -132,6 +122,7 @@ def fix_empty_schemas(d: dict) -> dict:
 
 
 def fix_broken_security(d: dict) -> dict:
+    """Fixes empty objects in security objects list"""
     for k, v in d.items():
         if isinstance(v, dict):
             fix_broken_security(v)
