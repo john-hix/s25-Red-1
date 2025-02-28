@@ -40,7 +40,7 @@ class OpenAPIOperation(Base):  # pylint: disable=too-few-public-methods
         nullable=False
     )
 
-    http_verb: Column = Column(Enum(HttpVerb), nullable=False)
+    http_verb = Column(Enum(HttpVerb), nullable=False)
     
     selection_prompt = Column(Text, nullable=False)
     llm_content_gen_tool_call_spec = Column(JSON)

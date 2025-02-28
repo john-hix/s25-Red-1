@@ -15,6 +15,7 @@ from pydantic import (  # type: ignore
     field_validator,
     model_validator,
     validator,
+    SkipValidation
 )
 from pydantic.alias_generators import to_camel, to_snake  # type: ignore
 from sqlalchemy import select
@@ -22,7 +23,9 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm.util import identity_key
 from typing_extensions import Self
 
-from common.models import openapi_entity, openapi_server
+from common.models import openapi_entity, openapi_server, openapi_path, openapi_operation
+from common.session_helper import SessionHelper
+from dataclasses import field
 
 # context_session: ContextVar = ContextVar(name="session")
 
@@ -176,21 +179,31 @@ class ServerObject(BaseModel):
     the document containing the Server Object is being served. 
     Variable substitutions will be made when a variable is named in {braces}."""
 
-    oas_uuid: UUID
+    _oas_uuid: UUID | None = None
+    _uuid: UUID | None = None
+
     """The UUID of the containing OpenAPI spec"""
+    @model_validator(mode="before")
+    def begin(cls, values) -> dict:
+        values["_oas_uuid"] = openapi_spec_id.get()
+        if values.get("url") is None:
+            raise ValueError("field url must not be empty")
+        values["_uuid"] = uuid5(namespace=NAMESPACE_URL, name=values["url"])
+        return values
+    
 
-    uuid: UUID
-    """a unique UUID for storing in the database"""
+    
+    
 
-    @validator("uuid", always=True)
-    @classmethod
-    def validate_uuid(cls, value, values):
-        return uuid5(namespace=uuid.NAMESPACE_URL, name=values["url"])
+    # @validator("_uuid", always=True)
+    # @classmethod
+    # def validate_uuid(cls, value, values):
+    #     return uuid5(namespace=uuid.NAMESPACE_URL, name=values["url"])
 
-    @validator("oas_uuid", always=True)
-    @classmethod
-    def validate_oas_uuid(cls, value):
-        return openapi_spec_id.get()
+    # @validator("_oas_uuid", always=True)
+    # @classmethod
+    # def validate_oas_uuid(cls, value):
+    #     return openapi_spec_id.get()
 
     description: str | None = None
     """An optional string describing the host designated by the URL. 
@@ -201,16 +214,22 @@ class ServerObject(BaseModel):
     """A map between a variable name and its value. 
     The value is used for substitution in the server's URL template."""
 
-    @model_validator(mode="after")
-    def finish(self) -> Self:
-        session: scoped_session = config_info[openapi_spec_id.get()]["session"]
+    # this is done in openapi_parsing.py
 
-        db_object = openapi_server.OpenAPIServer(
-            openapi_server_id=self.uuid, spec_id=self.oas_uuid
-        )
-        if session.query(db_object).scalar() is None:
-            session.add(db_object)
-        return self
+    # @model_validator(mode="after")
+    # def finish(self) -> Self:
+    #     session: scoped_session = config_info[openapi_spec_id.get()]["session"]
+
+    #     db_object = openapi_server.OpenAPIServer(
+    #         openapi_server_id=self.uuid, spec_id=self.oas_uuid
+    #     )
+    #     try:
+    #         session.add(db_object)
+    #     except IntegrityError:
+    #         pass
+    #     if session.query(db_object).scalar() is None:
+    #         session.add(db_object)
+    #     return self
 
 
 class ExternalDocumentationObject(BaseModel):
@@ -345,6 +364,45 @@ class ParameterObject(BaseModel):
             )
         return self
 
+class ExampleObject(BaseModel):
+    """An object grouping an internal or external example value with basic
+    summary and description metadata. This object is typically used in fields
+    named examples (plural), and is a referenceable alternative to older example
+    (singular) fields that do not support referencing or metadata.
+
+    Examples allow demonstration of the usage of properties, parameters and
+    objects within OpenAPI."""
+
+    model_config = ConfigDict(
+        alias_generator=AliasGenerator(
+            validation_alias=to_snake,
+            serialization_alias=to_camel,
+        ),
+        populate_by_name=True,
+        extra="allow",
+    )
+    """This object MAY be extended with Specification Extensions."""
+
+    summary: str | None = None
+    """Short description for the example."""
+
+    description: str | None = None
+    """Long description for the example. 
+    [CommonMark syntax](https://spec.commonmark.org/)
+    MAY be used for rich text representation."""
+
+    # TODO: parse as plaintext string
+    value: object | None = None
+    """Embedded literal example. The value field and externalValue field are 
+    mutually exclusive. To represent examples of media types that cannot 
+    naturally represented in JSON or YAML, use a string value to contain the 
+    example, escaping where necessary."""
+
+    external_value: str | None = None
+    """A URI that identifies the literal example. 
+    This provides the capability to reference examples that cannot easily be 
+    included in JSON or YAML documents. The value field and externalValue field 
+    are mutually exclusive. See the rules for resolving Relative References."""
 
 class ParameterObjectSchema(ParameterObject):
     model_config = ConfigDict(
@@ -502,47 +560,6 @@ class SchemaObject(BaseModel):
     Deprecated: The example field has been deprecated in favor of the 
     JSON Schema examples keyword. Use of example is discouraged, 
     and later versions of this specification may remove it."""
-
-
-class ExampleObject(BaseModel):
-    """An object grouping an internal or external example value with basic
-    summary and description metadata. This object is typically used in fields
-    named examples (plural), and is a referenceable alternative to older example
-    (singular) fields that do not support referencing or metadata.
-
-    Examples allow demonstration of the usage of properties, parameters and
-    objects within OpenAPI."""
-
-    model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            validation_alias=to_snake,
-            serialization_alias=to_camel,
-        ),
-        populate_by_name=True,
-        extra="allow",
-    )
-    """This object MAY be extended with Specification Extensions."""
-
-    summary: str | None = None
-    """Short description for the example."""
-
-    description: str | None = None
-    """Long description for the example. 
-    [CommonMark syntax](https://spec.commonmark.org/)
-    MAY be used for rich text representation."""
-
-    # TODO: parse as plaintext string
-    value: object | None = None
-    """Embedded literal example. The value field and externalValue field are 
-    mutually exclusive. To represent examples of media types that cannot 
-    naturally represented in JSON or YAML, use a string value to contain the 
-    example, escaping where necessary."""
-
-    external_value: str | None = None
-    """A URI that identifies the literal example. 
-    This provides the capability to reference examples that cannot easily be 
-    included in JSON or YAML documents. The value field and externalValue field 
-    are mutually exclusive. See the rules for resolving Relative References."""
 
 
 class HeaderObject(BaseModel):
@@ -985,14 +1002,16 @@ class PathItemObject(BaseModel):
 
     x_cuecode: str | None = Field(alias="x-cuecode", default=None)
 
-    @model_validator(mode="after")
+    @model_validator(mode='after')
     def finish(self) -> Self:
-        # TODO: After validation for Path Object
+
         return self
 
+    
 
-context_tag_uuids: ContextVar[dict] = ContextVar(name="tag_uuids")
-context_tags: ContextVar[dict] = ContextVar(name="tags")
+
+context_tag_uuids: ContextVar[dict] = ContextVar("tag_uuids")
+context_tags: ContextVar[dict] = ContextVar("tags")
 
 
 class TagObject(BaseModel):
@@ -1170,40 +1189,31 @@ class ComponentsObject(BaseModel):
     security_schemes: dict[str, SecuritySchemeObject] | None = None
 
 
-openapi_spec_id: ContextVar = ContextVar(name="openapi_spec_id")
+openapi_spec_id: ContextVar = ContextVar("openapi_spec_id")
 """generate a new OpenAPI Spec UUID for storing in the database"""
 
 
 class OpenAPIObject(BaseModel):
     """Deserialized OpenAPI 3.1 Specification"""
 
-    openapi_spec_uuid: UUID
+    openapi_spec_uuid: UUID | None = None
 
-    db_session: scoped_session
+    db_session: scoped_session | None = None
 
-    base_url: str
+    base_url: str | None = None
 
     session_errors_encountered: bool = False
+  
+        
 
-    @model_validator(mode='wrap')
+    @model_validator(mode='before')
     @classmethod
-    def validate_model(cls, values, handler):
-        if values["servers"] is None or values["servers"].empty():
-            values["servers"] = [
-                ServerObject(
-                    url = values["base_url"],
-                    description=None,
-                    variables=None,
-                    uuid=uuid5(namespace=NAMESPACE_URL, name="/"),
-                    oas_uuid=id.get(),
-                )
-            ]
-
+    def validate_model(cls, values):
         try:
-            spec_id = values["openapi_spec_id"]
+            spec_id = values["openapi_spec_uuid"]
         except KeyError:
             raise ValueError(
-                "openapi_spec_id must be passed first as a `uuid.UUID` object"
+                "openapi_spec_uuid must be passed as the second positional keyword"
             )
 
         try:
@@ -1218,16 +1228,13 @@ class OpenAPIObject(BaseModel):
         except KeyError:
             raise ValueError("base_url must be passed as the third positional keyword")
 
-        id_token = openapi_spec_id.set(values["openapi_spec_uuid"])
+        
+
+
+        id_token = openapi_spec_id.set(spec_id)
         config_info[spec_id]["session"] = session
-        # session_token = context_session.set(values.pop("db_session"))
-        # tag_uuids_token = context_tag_uuids.set({})
-        try:
-            return handler(values)
-        finally:
-            # context_session.reset(session_token)
-            openapi_spec_id.reset(id_token)
-            # tag_uuids_token.reset(tag_uuids_token)
+        return values
+        
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
@@ -1235,6 +1242,8 @@ class OpenAPIObject(BaseModel):
         ),
         populate_by_name=True,
         extra="allow",
+        arbitrary_types_allowed=True
+
     )
     """This object MAY be extended with Specification Extensions."""
 
@@ -1259,7 +1268,7 @@ class OpenAPIObject(BaseModel):
 
     security: SecurityRequirementObjects | None = None
 
-    servers: List[ServerObject]
+    servers: List[ServerObject] | None = None
     """An array of Server Objects, 
     which provide connectivity information to a target server. 
     If the servers field is not provided, or is an empty array, 
@@ -1269,13 +1278,90 @@ class OpenAPIObject(BaseModel):
 
     components: ComponentsObject | None = None
 
+    
+
+    @model_validator(mode='after')
+    def finish(self) -> Self:
+        if self.base_url is None:
+            raise ValueError("_base_url missing")
+        if self.openapi_spec_uuid is None:
+            raise ValueError("_openapi_spec_uuid missing")
+        if self.servers is None or not self.servers:
+            self.servers = [
+                ServerObject(
+                    url = self.base_url,
+                    description=None,
+                    variables=None,
+                    _oas_uuid=self.openapi_spec_uuid,
+                )
+            ]
+
+        for server in self.servers:
+            SessionHelper.session_add(
+                openapi_server.OpenAPIServer(
+                    openapi_server_id=server._uuid,
+                    spec_id = self.openapi_spec_uuid, 
+                    url=server.url
+                ), 
+                self.db_session
+            )
+
+        for pathname, path in self.paths.items():
+            path_id: UUID = uuid4()
+            model = openapi_path.OpenAPIPath(
+                openapi_path_id = path_id,
+                spec_id=self.openapi_spec_uuid, 
+                path_templated=pathname
+            ), 
+            SessionHelper.session_add(
+                model,
+                self.db_session
+            )
+            for http_verb in openapi_operation.HttpVerb:
+                operation: OperationObject = getattr(path, http_verb.lower())
+                if operation is None:
+                    continue
+                
+                servers = operation.servers
+                if servers is None:
+                    servers = path.servers
+                if servers is None:
+                    servers = self.servers
+
+                operation_prompt = operation.x_cuecode
+                if operation_prompt is None:
+                    operation_prompt = operation.description
+                if operation_prompt is None:
+                    operation_prompt = operation.summary
+                if operation_prompt is None:
+                    operation_prompt = operation.operation_id
+                if operation_prompt is None:
+                    operation_prompt = f"pathname:{http_verb}"
+
+                model = openapi_operation.OpenAPIOperation(
+                    oa_server_id = servers[0]._uuid,
+                    oa_path_id = path_id,
+                    http_verb = http_verb.upper(),
+                    selection_prompt = operation_prompt,
+                    llm_content_gen_tool_cal_spec = self._gen_func(
+                        servers=self.servers,
+                        path=pathname,
+                        operation=operation,
+                        operation_name=http_verb
+                    )
+                )
+
+        return self
+
+
     @staticmethod
     def from_formatted_json(spec_id: UUID, db_session: scoped_session, base_url: str, data: dict):
         """create openapi object from json"""
         return OpenAPIObject(openapi_spec_uuid=spec_id, db_session=db_session, base_url=base_url, **data)
 
     def session_commit(self) -> None:
-        self.db_session.commit()
+        if self.db_session is not None:
+            self.db_session.commit()
 
     # TODO: Review & test this, high priority
     @staticmethod
@@ -1344,7 +1430,8 @@ class OpenAPIObject(BaseModel):
             raise ValueError("Per CueCode restrictions, each unique path must have one and only one server")
 
         for server in servers:
-            out[(server.uuid.int, server.url + path)] = {
+            
+            out[(cast(UUID, server._uuid).int, server.url + path)] = {
                 "type": "function",
                 "function": {
                     "name": server.url + func_name,
@@ -1367,6 +1454,8 @@ class OpenAPIObject(BaseModel):
         out: List[dict] = []
 
         out2: defaultdict = defaultdict(list)
+        if self.servers is None:
+            raise ValueError("servers cannot be None")
 
         server_stack = [self.servers]
 
