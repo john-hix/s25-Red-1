@@ -9,7 +9,7 @@ from openapi_spec_validator import validate  # This
 
 from common.database_engine import DBEngine
 from common.models.openapi_entity import OpenAPIEntity
-from common.models.openapi_path import OpenAPIOperation, OpenAPIPath
+from common.models.openapi_path import OpenAPIPath  # OpenAPIOperation
 from common.models.openapi_server import OpenAPIServer
 from common.models.openapi_spec import OpenAPISpec
 from common.openapi.openapi_schema_adapter import OpenAPISchemaAdapter

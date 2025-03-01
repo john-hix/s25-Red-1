@@ -24,12 +24,53 @@ from typing_extensions import Self
 
 from common.models import openapi_entity, openapi_server
 
-# context_session: ContextVar = ContextVar(name="session")
+# context_session: ContextVar = ContextVar("session")
 
-# context_relationships: ContextVar = ContextVar(name="relationships")
+# context_relationships: ContextVar = ContextVar("relationships")
 
 
 config_info: dict = defaultdict(lambda: defaultdict(dict))
+
+
+class ExampleObject(BaseModel):
+    """An object grouping an internal or external example value with basic
+    summary and description metadata. This object is typically used in fields
+    named examples (plural), and is a referenceable alternative to older example
+    (singular) fields that do not support referencing or metadata.
+
+    Examples allow demonstration of the usage of properties, parameters and
+    objects within OpenAPI."""
+
+    model_config = ConfigDict(
+        alias_generator=AliasGenerator(
+            validation_alias=to_snake,
+            serialization_alias=to_camel,
+        ),
+        populate_by_name=True,
+        extra="allow",
+    )
+    """This object MAY be extended with Specification Extensions."""
+
+    summary: str | None = None
+    """Short description for the example."""
+
+    description: str | None = None
+    """Long description for the example. 
+    [CommonMark syntax](https://spec.commonmark.org/)
+    MAY be used for rich text representation."""
+
+    # TODO: parse as plaintext string
+    value: object | None = None
+    """Embedded literal example. The value field and externalValue field are 
+    mutually exclusive. To represent examples of media types that cannot 
+    naturally represented in JSON or YAML, use a string value to contain the 
+    example, escaping where necessary."""
+
+    external_value: str | None = None
+    """A URI that identifies the literal example. 
+    This provides the capability to reference examples that cannot easily be 
+    included in JSON or YAML documents. The value field and externalValue field 
+    are mutually exclusive. See the rules for resolving Relative References."""
 
 
 class ContactObject(BaseModel):
@@ -185,7 +226,7 @@ class ServerObject(BaseModel):
     @validator("uuid", always=True)
     @classmethod
     def validate_uuid(cls, value, values):
-        return uuid5(namespace=uuid.NAMESPACE_URL, name=values["url"])
+        return uuid5(namespace=cls.uuid.NAMESPACE_URL, name=values["url"])
 
     @validator("oas_uuid", always=True)
     @classmethod
@@ -358,13 +399,13 @@ class ParameterObjectSchema(ParameterObject):
 
     style: str
 
-    @model_validator(mode="before")
-    def validate_style(cls, values):
-        if not "style" in data:
-            if values["in"] == "query" or "cookie":
-                values["style"] = "form"
-            elif values["in"] == "path" or "header":
-                values["style"] = "simple"
+    # @model_validator(mode="before")
+    # def validate_style(cls, values):
+    #     if not "style" in data:
+    #         if values["in"] == "query" or "cookie":
+    #             values["style"] = "form"
+    #         elif values["in"] == "path" or "header":
+    #             values["style"] = "simple"
 
     explode: bool = False
 
@@ -502,47 +543,6 @@ class SchemaObject(BaseModel):
     Deprecated: The example field has been deprecated in favor of the 
     JSON Schema examples keyword. Use of example is discouraged, 
     and later versions of this specification may remove it."""
-
-
-class ExampleObject(BaseModel):
-    """An object grouping an internal or external example value with basic
-    summary and description metadata. This object is typically used in fields
-    named examples (plural), and is a referenceable alternative to older example
-    (singular) fields that do not support referencing or metadata.
-
-    Examples allow demonstration of the usage of properties, parameters and
-    objects within OpenAPI."""
-
-    model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            validation_alias=to_snake,
-            serialization_alias=to_camel,
-        ),
-        populate_by_name=True,
-        extra="allow",
-    )
-    """This object MAY be extended with Specification Extensions."""
-
-    summary: str | None = None
-    """Short description for the example."""
-
-    description: str | None = None
-    """Long description for the example. 
-    [CommonMark syntax](https://spec.commonmark.org/)
-    MAY be used for rich text representation."""
-
-    # TODO: parse as plaintext string
-    value: object | None = None
-    """Embedded literal example. The value field and externalValue field are 
-    mutually exclusive. To represent examples of media types that cannot 
-    naturally represented in JSON or YAML, use a string value to contain the 
-    example, escaping where necessary."""
-
-    external_value: str | None = None
-    """A URI that identifies the literal example. 
-    This provides the capability to reference examples that cannot easily be 
-    included in JSON or YAML documents. The value field and externalValue field 
-    are mutually exclusive. See the rules for resolving Relative References."""
 
 
 class HeaderObject(BaseModel):
@@ -991,8 +991,8 @@ class PathItemObject(BaseModel):
         return self
 
 
-context_tag_uuids: ContextVar[dict] = ContextVar(name="tag_uuids")
-context_tags: ContextVar[dict] = ContextVar(name="tags")
+context_tag_uuids: ContextVar[dict] = ContextVar("tag_uuids")
+context_tags: ContextVar[dict] = ContextVar("tags")
 
 
 class TagObject(BaseModel):
@@ -1170,7 +1170,7 @@ class ComponentsObject(BaseModel):
     security_schemes: dict[str, SecuritySchemeObject] | None = None
 
 
-openapi_spec_id: ContextVar = ContextVar(name="openapi_spec_id")
+openapi_spec_id: ContextVar = ContextVar("openapi_spec_id")
 """generate a new OpenAPI Spec UUID for storing in the database"""
 
 
