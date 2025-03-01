@@ -1185,13 +1185,13 @@ class OpenAPIObject(BaseModel):
 
     session_errors_encountered: bool = False
 
-    @model_validator(mode='wrap')
+    @model_validator(mode="wrap")
     @classmethod
     def validate_model(cls, values, handler):
         if values["servers"] is None or values["servers"].empty():
             values["servers"] = [
                 ServerObject(
-                    url = values["base_url"],
+                    url=values["base_url"],
                     description=None,
                     variables=None,
                     uuid=uuid5(namespace=NAMESPACE_URL, name="/"),
@@ -1270,9 +1270,13 @@ class OpenAPIObject(BaseModel):
     components: ComponentsObject | None = None
 
     @staticmethod
-    def from_formatted_json(spec_id: UUID, db_session: scoped_session, base_url: str, data: dict):
+    def from_formatted_json(
+        spec_id: UUID, db_session: scoped_session, base_url: str, data: dict
+    ):
         """create openapi object from json"""
-        return OpenAPIObject(openapi_spec_uuid=spec_id, db_session=db_session, base_url=base_url, **data)
+        return OpenAPIObject(
+            openapi_spec_uuid=spec_id, db_session=db_session, base_url=base_url, **data
+        )
 
     def session_commit(self) -> None:
         self.db_session.commit()
@@ -1341,7 +1345,9 @@ class OpenAPIObject(BaseModel):
         out: dict = {}
 
         if len(servers) > 1:
-            raise ValueError("Per CueCode restrictions, each unique path must have one and only one server")
+            raise ValueError(
+                "Per CueCode restrictions, each unique path must have one and only one server"
+            )
 
         for server in servers:
             out[(server.uuid.int, server.url + path)] = {
@@ -1356,8 +1362,6 @@ class OpenAPIObject(BaseModel):
                     "required": required,
                 },
             }
-
-        
 
         return out
 
