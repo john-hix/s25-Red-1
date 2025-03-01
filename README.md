@@ -134,6 +134,13 @@ To connect to the Postgres database, follow the instructions below.
 5. Click "Save"
 6. It should have connected successfully.
 
+## Database migrations with Docker and Make convenience command
+
+For cross-platform compatability, we use Docker for running
+the `dbmate` migrations contained in `./db/migrations`. The `Makefile`
+details the available commands. To get started, ensure the Docker
+Postgres database is running, then issue `make dbmate-up`.
+
 # Python environment setup
 
 With Python installed on your system, complete the following:

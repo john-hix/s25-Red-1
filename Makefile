@@ -65,6 +65,22 @@ docker-down:
 docker-clean: docker-down
 	sudo docker volume rm cuecode-dev_pgdata cuecode-dev_pgadmindata
 
+# Run the dbmate migrations per their docs in a cross-platform way
+# https://github.com/amacneil/dbmate?tab=readme-ov-file#running-migrations
+dbmate-up:
+	sudo docker run --rm -it --network=host -v "$$(pwd)/db:/db" ghcr.io/amacneil/dbmate --url "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" up
+
+# Rollback the last dbmate migration per their docs in a cross-platform way
+# https://github.com/amacneil/dbmate?tab=readme-ov-file#rolling-back-migrations
+dbmate-rollback:
+	sudo docker run --rm -it --network=host -v "$$(pwd)/db:/db" ghcr.io/amacneil/dbmate --url "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" rollback
+
+# Dump the database schema to a file in the local dev environment
+# This happens automatically on `up` and `rollback` commands.
+# https://github.com/amacneil/dbmate?tab=readme-ov-file#exporting-schema-file
+dbmate-dump:
+	sudo docker run --rm -it --network=host -v "$$(pwd)/db:/db" ghcr.io/amacneil/dbmate --url "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" dump
+
 clean:
 	rm -rf .venv
 	find -iname "*.pyc" -delete
