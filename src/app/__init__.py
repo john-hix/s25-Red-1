@@ -5,11 +5,13 @@ import os
 
 from flask import Flask, jsonify, redirect
 
+from common import app_config
+from common.app_config import FlaskConfig
+from common.models.base import db
 from common.models.cuecode_config import CuecodeConfig
-from common.server_config import FlaskConfig
 
-from .api.bp_api import create_blueprint as create_api_blueprint
-from .portal.bp_portal import create_blueprint as create_portal_blueprint
+from .api import create_blueprint as create_api_blueprint
+from .portal import create_blueprint as create_portal_blueprint
 
 
 def create_app():
@@ -17,6 +19,9 @@ def create_app():
 
     app = Flask(__name__)
     app.config.from_object(FlaskConfig())
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = app_config.SQLALCHEMY_DATABASE_URI
+    db.init_app(app)
 
     # Apply blueprints
     # https://flask.palletsprojects.com/en/stable/blueprints/
