@@ -6,10 +6,10 @@ import uuid
 from sqlalchemy import Boolean, Column
 from sqlalchemy.dialects.postgresql import UUID
 
-from .base import Base, db
+from .base import Base
 
 
-class CuecodeConfig(db.Model):
+class CuecodeConfig(Base):
     """Stores CueCode config for any kind of API, since in the RWP CueCode could
     work against GraphQL and other API types"""
 

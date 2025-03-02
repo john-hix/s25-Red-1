@@ -5,15 +5,19 @@ from uuid import UUID
 
 import jsonref
 from jsonref import JsonRef  # pylint: disable = import-error
-from openapi_spec_validator import validate  # This
 
 from common.database_engine import DBEngine
 from common.models.openapi_entity import OpenAPIEntity
 from common.models.openapi_path import OpenAPIPath  # OpenAPIOperation
 from common.models.openapi_server import OpenAPIServer
 from common.models.openapi_spec import OpenAPISpec
-from common.openapi.openapi_schema_adapter import OpenAPISchemaAdapter
 from configuration.openapi_parsing import make_oa_servers_from_json
+from configuration.openapi_schema_adapter import OpenAPISchemaAdapter
+from configuration.openapi_schema_validate import validate_openapi_spec
+from configuration.openapi_spec_entity_collection import OpenAPISpecEntityCollection
+from configuration.openapi_validator_to_spec_mapper import (
+    validator_to_entity_collection,
+)
 
 from .openapi import OpenAPIObject
 
@@ -31,20 +35,32 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
     session = db_engine.get_session()
 
     # Fetch OpenAPI spec from PostgreSQL
-    openapi_spec = session.get(OpenAPISpec, openapi_spec_id)
-    spec_adapter = OpenAPISchemaAdapter(openapi_spec)
-    spec_json = spec_adapter.get_dereferencing_json()
+    db_spec = session.get(OpenAPISpec, openapi_spec_id)
 
-    # Initialize empty list of openapi_server, openapi_entity, open_api
-    oa_servers: list[OpenAPIServer] = []
-    oa_entities: list[OpenAPIEntity] = []
-    oa_operations: list[OpenAPIOperation] = []
+    # Ensure the text spec is a valid OpenAPI specification as such, apart any
+    # knowledge of CueCode's requirements for OpenAPI spec structure.
+    validate_openapi_spec(db_spec)
 
-    # Encode each OpenAPI server from JSON spec as an openapi_server database entity
-    make_oa_servers_from_json(oa_servers, spec_json)
+    # Prepare the spec text for CueCode's parsing and validation, since
+    # CueCode constrains some OpenAPI options and also provides extensions
+    # to the OpenAPI spec
+    spec_adapter = OpenAPISchemaAdapter(db_spec)
+    spec_json = spec_adapter.get_cleaned_json_dict()
 
-    # parallel over Schema Object in OpenAPI spec
+    # Parse the OpenAPI specification
+    parsed_spec = from_formatted_json(UUID(openapi_spec_id), spec_json)
+
+    # Pull from the parsed spec all SQLAlchemy entities represented in the spec
+    spec_entities: OpenAPISpecEntityCollection = validator_to_entity_collection(
+        parsed_spec
+    )
+
+    # Add
+
+    # parallel over Schema Object
+
     # parallel over HTTP verb in Path OpenAPI spec object
+
     # Schema object has x-cuecode-exclude? Yes then
     # next item in loop
     # Initialize new OpenApiEntity object
@@ -60,15 +76,6 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
 
     # UPSERT entity list to PostgreSQL (but do not commit transactinon)
 
-    # Parallel over Path Object in OpenAPI spec
-    # Iterate over HTTP verb in Path object
-    # Path object has x-cuecode-exclude? Yes then
-    # next item in loop
-    # Initialize new OpenApiPath object
-    # Path object has x-cuecode-prompt? Yes then
-    # Save x-cuecode-prompt to OpenApiPath .selectionPrompt
-    # else
-    # Save Schema Object name to OpenApiPath .selectionPrompt
     # Call Ollama for embedding of selectionPrompt
 
     # UPSERT endpoint list to PostgreSQL (but do not commit transactinon)
@@ -88,70 +95,15 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
 
     # Ack config job queue task
 
-    print(openapi_spec)
+    # print(openapi_spec)
 
     # BEGIN Chase's work
-    openapi_spec = session.get(OpenAPISpec, openapi_spec_id)
 
     # Needed in the event no server is specified in the servers array
-    base_server_url = openapi_spec.base_url
 
-    # Update OpenAPI to v3.1, validate spec, and fix empty schemas
-    formatted_openapi_spec = format_convert(openapi_spec)
 
-    openapi_repr = OpenAPIObject.from_formatted_json(
-        UUID(openapi_spec_id), session, base_server_url, formatted_openapi_spec
+def from_formatted_json(spec_id: UUID, data: dict):
+    """create openapi object from json"""
+    return OpenAPIObject(
+        openapi_spec_uuid=spec_id, base_url=data["servers"][0]["url"], **data
     )
-
-    if not openapi_repr.session_errors_encountered:
-        session.commit()
-
-    print(openapi_repr)
-
-
-def fix_empty_schemas(d: dict) -> dict:
-    for k, v in d.items():
-        if isinstance(v, dict):
-            fix_empty_schemas(v)
-        elif k == "schema" and isinstance(v, list) and not v:
-            d[k] = {}
-    return d
-
-
-def fix_broken_security(d: dict) -> dict:
-    for k, v in d.items():
-        if isinstance(v, dict):
-            fix_broken_security(v)
-        elif k == "security" and isinstance(v, list):
-            while {} in v:
-                v.remove({})
-    return d
-
-
-def format_convert(input: str) -> dict:
-    """Format OpenAPI to JSON and convert OpenAPI 3.0 spec to OpenAPI 3.1"""
-
-    result = subprocess.run(
-        ["node", "../../node_modules/openapi-format-wrapper"],
-        input=input,
-        text=True,
-        capture_output=True,
-    )
-
-    if result.returncode != 0:
-        raise subprocess.CalledProcessError(
-            result.returncode,
-            [
-                "node",
-                "node_modules/openapi-format-wrapper",
-                result.stdout,
-                result.stderr,
-            ],
-        )
-
-    spec = fix_empty_schemas(jsonref.loads(result.stdout))
-    spec = fix_broken_security(spec)
-
-    validate(spec)
-
-    return spec

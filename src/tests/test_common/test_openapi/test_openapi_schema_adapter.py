@@ -6,7 +6,7 @@ from hamcrest import assert_that, equal_to
 from jsonref import JsonRef  # pylint: disable = import-error
 
 from common.models.openapi_spec import OpenAPISpec
-from common.openapi.openapi_schema_adapter import OpenAPISchemaAdapter
+from configuration.openapi_schema_adapter import OpenAPISchemaAdapter
 
 
 def test_integration_json_ref_dict():
@@ -20,7 +20,7 @@ def test_integration_json_ref_dict():
         spec.spec_text = f.read()
 
         adapter_under_test: OpenAPISchemaAdapter = OpenAPISchemaAdapter(spec)  # type: ignore
-        json: JsonRef = adapter_under_test.get_dereferencing_json()  # type: ignore
+        json: JsonRef = adapter_under_test.get_raw_json_dict()  # type: ignore
         # Index into a referenced object and confirm that works.
         assert_that(
             True,

@@ -81,6 +81,9 @@ dbmate-rollback:
 dbmate-dump:
 	sudo docker run --rm -it --network=host -v "$$(pwd)/db:/db" ghcr.io/amacneil/dbmate --url "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" dump
 
+db-seed:
+	. .venv/bin/activate; python db/seed/dev_seed.py
+
 clean:
 	rm -rf .venv
 	find -iname "*.pyc" -delete

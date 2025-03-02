@@ -3,7 +3,7 @@
 import os
 
 from common.models.openapi_spec import OpenAPISpec
-from common.openapi.openapi_schema_validate import validate_openapi_spec
+from configuration.openapi_schema_validate import validate_openapi_spec
 
 
 def test_valid_spec_does_not_throw_pet_store():
