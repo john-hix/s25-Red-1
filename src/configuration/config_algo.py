@@ -57,6 +57,11 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
 
     # Add
 
+    # NOTE The comments below describe the config algo from the Activity Diagram
+    # in our Design docs, but it does NOT really follow how the code will be
+    # structured if using OOP! A TODO is to clean up these comments in prep for
+    # using the output of validator_to_entity_collection().
+
     # parallel over Schema Object
 
     # parallel over HTTP verb in Path OpenAPI spec object
