@@ -101,13 +101,13 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
     formatted_openapi_spec = format_convert(openapi_spec)
 
     openapi_repr = OpenAPIObject.from_formatted_json(
-        UUID(openapi_spec_id), session, base_server_url, formatted_openapi_spec
+        UUID(openapi_spec_id), base_server_url, formatted_openapi_spec
     )
 
-    if not openapi_repr.session_errors_encountered:
-        session.commit()
-
     print(openapi_repr)
+
+    openapi_repr.db_insert(session)
+    session.commit()
 
 
 def fix_empty_schemas(d: dict) -> dict:

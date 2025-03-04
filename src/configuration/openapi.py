@@ -44,7 +44,7 @@ class ContactObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -68,7 +68,7 @@ class LicenseObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -94,7 +94,7 @@ class InfoObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -136,7 +136,7 @@ class ServerVariableObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -168,7 +168,7 @@ class ServerObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -239,7 +239,7 @@ class ExternalDocumentationObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -271,7 +271,7 @@ class ExampleObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -337,7 +337,7 @@ class ParameterObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -385,39 +385,30 @@ class ParameterObject(BaseModel):
 
     x_cuecode: str | None = Field(default=None, alias="x-cuecode")
 
-    @model_validator(mode="after")
-    def finish(self) -> Self:
-        session: scoped_session = config_info[openapi_spec_id.get()]["session"]
-        noun_prompt = self.x_cuecode
-        if noun_prompt is None:
-            noun_prompt = self.description
-        if self.description is None:
-            noun_prompt = self.name
-        if (
-            session.execute(
-                select(openapi_entity.OpenAPIEntity).where(
-                    openapi_entity.OpenAPIEntity.noun_prompt == noun_prompt
-                )
-            ).scalar()
-            is None
-        ):
-            session.add(
-                openapi_entity.OpenAPIEntity(
-                    openapi_entity_id=uuid4(),
-                    contained_in_oa_spec_id=openapi_spec_id.get(),
-                    noun_prompt=noun_prompt,
-                )
-            )
-        return self
-
-    model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            validation_alias=to_snake,
-            serialization_alias=to_camel,
-        ),
-        populate_by_name=True,
-        extra="allow",
-    )
+    # def db_insert(self) -> Self:
+    #     """Insert OpenAPI Object into relevant database tables"""
+    #     session: scoped_session = config_info[openapi_spec_id.get()]["session"]
+    #     noun_prompt = self.x_cuecode
+    #     if noun_prompt is None:
+    #         noun_prompt = self.description
+    #     if self.description is None:
+    #         noun_prompt = self.name
+    #     if (
+    #         session.execute(
+    #             select(openapi_entity.OpenAPIEntity).where(
+    #                 openapi_entity.OpenAPIEntity.noun_prompt == noun_prompt
+    #             )
+    #         ).scalar()
+    #         is None
+    #     ):
+    #         session.add(
+    #             openapi_entity.OpenAPIEntity(
+    #                 openapi_entity_id=uuid4(),
+    #                 contained_in_oa_spec_id=openapi_spec_id.get(),
+    #                 noun_prompt=noun_prompt,
+    #             )
+    #         )
+    #     return self
 
     style: str | None = None
 
@@ -425,12 +416,28 @@ class ParameterObject(BaseModel):
     @classmethod
     def validate_style(cls, values) -> dict:
         if "schema" in values:
-            if not "style" in values:
+            if "style" not in values:
                 if values["in"] == "query" or "cookie":
                     values["style"] = "form"
                 elif values["in"] == "path" or "header":
                     values["style"] = "simple"
         return values
+
+    def __init__(self, **values):
+        
+        super().__init__(**values)
+        # if "schema" in values:
+        #     if "style" not in values:
+        #         if values["in"] == "query" or "cookie":
+        #             values["style"] = "form"
+        #         elif values["in"] == "path" or "header":
+        #             values["style"] = "simple"
+        if self.schema_ is not None:
+            if self.style is None:
+                if self.in_ == "query" or "cookie":
+                    self.style = "form"
+                elif self.in_ == "path" or "header":
+                    self.style = "simple"
 
     explode: bool | None = False
 
@@ -458,7 +465,7 @@ class DiscriminatorObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -485,7 +492,7 @@ class XMLObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -525,7 +532,7 @@ class SchemaObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -584,7 +591,7 @@ class HeaderObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -604,8 +611,6 @@ class HeaderObject(BaseModel):
     """Specifies that the header is deprecated and 
     SHOULD be transitioned out of usage."""
 
-
-class HeaderObjectSchema(HeaderObject):
     style: str | None = "simple"
     """Describes how the header value will be serialized. 
     The default (and only legal value for headers) is "simple"."""
@@ -618,17 +623,14 @@ class HeaderObjectSchema(HeaderObject):
 
     schema_: SchemaObject | None = Field(alias="schema", default=None)
 
-    example: Any
+    example: Any | None = None
 
     examples: dict[str, ExampleObject] | None = None
 
-
-class HeaderObjectContent(HeaderObject):
     content: dict[str, "MediaTypeObject"] | None = None
     """A map containing the representations for the header. 
     The key is the media type and the value describes it. 
     The map MUST only contain one entry."""
-
 
 class EncodingObject(BaseModel):
     """A single encoding definition applied to a single schema property.
@@ -650,7 +652,7 @@ class EncodingObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -686,7 +688,7 @@ class MediaTypeObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -721,7 +723,7 @@ class RequestBodyObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -762,7 +764,7 @@ class LinkObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -802,7 +804,7 @@ class ResponseObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -841,8 +843,8 @@ class OperationObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
-            serialization_alias=to_camel,
+            validation_alias=to_camel,
+            serialization_alias=to_snake,
         ),
         populate_by_name=True,
         extra="allow",
@@ -933,9 +935,9 @@ class PathItemObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake, serialization_alias=to_camel
+            validation_alias=to_camel, serialization_alias=to_camel
         ),
-        populate_by_name=True,
+        # populate_by_name=True,
         extra="allow",
     )
     """This object MAY be extended with Specification Extensions."""
@@ -1064,7 +1066,7 @@ class OAuthFlowObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -1099,7 +1101,7 @@ class OAuthFlowsObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -1117,7 +1119,7 @@ class SecuritySchemeObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -1168,7 +1170,7 @@ class ComponentsObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -1193,8 +1195,6 @@ class OpenAPIObject(BaseModel):
 
     openapi_spec_uuid: UUID | None = None
 
-    db_session: scoped_session | None = None
-
     base_url: str | None = None
 
     session_errors_encountered: bool = False
@@ -1212,24 +1212,16 @@ class OpenAPIObject(BaseModel):
             )
 
         try:
-            session = values["db_session"]
-        except KeyError:
-            raise ValueError(
-                "db_session must be passed as the second positional keyword"
-            )
-
-        try:
             base_url = values["base_url"]
         except KeyError:
             raise ValueError("base_url must be passed as the third positional keyword")
 
         id_token = openapi_spec_id.set(spec_id)
-        config_info[spec_id]["session"] = session
         return values
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake, serialization_alias=to_camel
+            validation_alias=to_camel, serialization_alias=to_camel
         ),
         populate_by_name=True,
         extra="allow",
@@ -1268,9 +1260,8 @@ class OpenAPIObject(BaseModel):
 
     components: ComponentsObject | None = None
 
-    @model_validator(mode="after")
-    def finish(self) -> Self:
-        is_test = self.is_test
+    def db_insert(self, db_session: scoped_session, is_test: bool) -> Self:
+        """Insert OpenAPI Object into database"""
 
         if self.base_url is None:
             raise ValueError("_base_url missing")
@@ -1279,7 +1270,7 @@ class OpenAPIObject(BaseModel):
         if self.servers is None or not self.servers:
             self.servers = [
                 ServerObject(
-                    url=self.base_url,
+                    url="/",
                     description=None,
                     variables=None,
                     # _oas_uuid=self.openapi_spec_uuid,
@@ -1293,7 +1284,7 @@ class OpenAPIObject(BaseModel):
                     spec_id=self.openapi_spec_uuid,
                     url=server.url,
                 ),
-                self.db_session,
+                db_session,
                 is_test,
             )
 
@@ -1305,7 +1296,7 @@ class OpenAPIObject(BaseModel):
                 path_templated=pathname,
             )
 
-            SessionHelper.session_add(model, self.db_session, is_test)
+            SessionHelper.session_add(model, db_session, is_test)
             for http_verb in ["GET", "POST", "PUT", "PATCH", "DELETE"]:
                 operation: OperationObject = getattr(path, http_verb.lower())
                 if operation is None:
@@ -1340,14 +1331,13 @@ class OpenAPIObject(BaseModel):
                         operation_name=http_verb,
                     ),
                 )
-                SessionHelper.session_add(model, self.db_session, is_test)
+                SessionHelper.session_add(model, db_session, is_test)
 
         return self
 
     @staticmethod
     def from_formatted_json(
         spec_id: UUID,
-        db_session: scoped_session,
         base_url: str,
         data: dict,
         _is_test=False,
@@ -1355,15 +1345,10 @@ class OpenAPIObject(BaseModel):
         """create openapi object from json"""
         return OpenAPIObject(
             openapi_spec_uuid=spec_id,
-            db_session=db_session,
             base_url=base_url,
             is_test=_is_test,
             **data,
         )
-
-    def session_commit(self) -> None:
-        if self.db_session is not None:
-            self.db_session.commit()
 
     # TODO: Review & test this, high priority
     @staticmethod

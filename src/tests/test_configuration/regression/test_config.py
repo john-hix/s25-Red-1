@@ -1,6 +1,8 @@
+from uuid import uuid4
+
 from configuration import config_algo
 from configuration.openapi import OpenAPIObject
-from uuid import uuid4
+
 from unittest.mock import MagicMock
 from sqlalchemy.orm.session import Session
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -19,23 +21,23 @@ dummy_scoped_session: scoped_session = scoped_session(mock_sessionmaker)
 
 
 def test_configuration():
-    regression_test_dir = get_src_dir() / "tests" / "test_configuration" / "regression"
-    output_dir = regression_test_dir / "test_output"
+    output_dir = get_src_dir() / "tests" / "test_configuration" / "regression" / "test_output"
+    
     if os.path.exists(output_dir):
-        shutil.rmtree(output_dir.__str__)
-    input_file = regression_test_dir.parent / "data" / "nextcloud-31.json"
+        shutil.rmtree(str(output_dir))
+    input_file = get_src_dir() / "tests" / "fixtures" / "openapi" / "nextcloud-v27-31.json"
     with input_file.open() as file:
         openapi_spec = file.read()
         formatted_openapi_spec = config_algo.fix_empty_schemas(
             jsonref.loads(openapi_spec)
         )
         formatted_openapi_spec = config_algo.fix_broken_security(formatted_openapi_spec)
-        openapi = OpenAPIObject.from_formatted_json(
+        openapi_repr = OpenAPIObject.from_formatted_json(
             uuid4(),
-            dummy_scoped_session,
             "https://example.com/",
             formatted_openapi_spec,
             True,
         )
+        openapi_repr.db_insert(dummy_scoped_session, True)
 
     # TODO: Validate results are correct automatically
