@@ -61,6 +61,9 @@ docker-run:
 docker-down:
 	sudo docker compose -f ./docker/dev/docker-compose.yml down
 
+docker-logs:
+	sudo docker compose -f ./docker/dev/docker-compose.yml logs -f --tail=200
+
 # Removes all data
 docker-clean: docker-down
 	sudo docker volume rm cuecode-dev_pgdata cuecode-dev_pgadmindata
