@@ -87,7 +87,8 @@ CREATE TABLE public.openapi_path (
 CREATE TABLE public.openapi_server (
     openapi_server_id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     spec_id uuid NOT NULL,
-    url character varying NOT NULL
+    url character varying NOT NULL,
+    base_url character varying
 );
 
 
@@ -216,4 +217,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250210132601'),
     ('20250211115733'),
     ('20250227131916'),
-    ('20250301201046');
+    ('20250301201046'),
+    ('20250306023308');
