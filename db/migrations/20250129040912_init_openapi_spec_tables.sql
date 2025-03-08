@@ -53,3 +53,4 @@ drop table if exists openapi_path;
 drop table if exists openapi_server;
 drop table if exists openapi_entity;
 drop table if exists openapi_spec;
+drop table if exists cuecode_config;

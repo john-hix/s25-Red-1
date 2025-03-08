@@ -18,11 +18,7 @@ def app():
 
     flask_app = Flask(__name__)
     flask_app.register_blueprint(create_blueprint())
-    flask_app.config.update(
-        {
-            "TESTING": True,
-        }
-    )
+    flask_app.config.update({"TESTING": True, "SECRET_KEY": "neededForTheForms"})
 
     # other setup can go here,
     # such as setting up Postgres

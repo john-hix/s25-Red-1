@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "openapi-format-wrapper": "file:./js/openapi-format-wrapper"
+  }
+}

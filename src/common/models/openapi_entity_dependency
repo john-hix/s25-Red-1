@@ -1,0 +1,26 @@
+"""Mapping of OpenAPIEntity entity dependencies"""
+
+import uuid
+
+from sqlalchemy import Column, ForeignKey, Text
+from sqlalchemy.dialects.postgresql import UUID
+
+from .base import Base
+
+class OpenAPIEntityDependency(Base):
+    """Class for OpenAPI Entity Parent/Child Relationship"""
+    __tablename__ = "openapi_entity_dependency"
+
+    parent_openapi_entity_id = Column(
+        UUID(as_uuid=True), 
+        ForeignKey("openapi_entity.openapi_entity_id"),
+        primary_key=True,
+        nullable=False,
+    )
+
+    child_openapi_entity_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("openapi_entity.openapi_entity_id"),
+        primary_key=True,
+        nullable=False,
+    )

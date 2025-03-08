@@ -1,3 +1,6 @@
+# Our project
+tmp
+
 ##https://github.com/github/gitignore/blob/main/Python.gitignore
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -178,5 +181,10 @@ cython_debug/
 #vscode specifics
 .vscode
 
+#node package lock
+package-lock.json
+
+#locally installed node modules
+node_modules/
 #cuecode specifics
 ## docker database

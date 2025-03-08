@@ -8,8 +8,10 @@ name: main-ci
 run-name: Running Main CI by ${{ github.actor }}
 on:
   pull_request:
+    types: [opened, closed, edited]
     branches:
       - main
+      - develop
 
   workflow_dispatch:
 

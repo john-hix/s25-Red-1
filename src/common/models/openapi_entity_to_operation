@@ -1,0 +1,24 @@
+"""Mapping of OpenAPIEntity to OpenAPIOperation"""
+
+import uuid
+
+from sqlalchemy import Column, ForeignKey, Text
+from sqlalchemy.dialects.postgresql import UUID
+
+from .base import Base
+
+class OpenAPIEntityToOperation(Base):
+    """Class for OpenAPI Entity to Operation mapping"""
+    __tablename__ = "openapi_entity_to_operation"
+
+    contains_openapi_entity_id = Column(
+        UUID(as_uuid=True), 
+        ForeignKey("openapi_entity.openapi_entity_id"),
+        nullable=False,
+    )
+
+    contained_in_openapi_operation_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("openapi_operation.openapi_operation_id"),
+        nullable=False,
+    )

@@ -10,6 +10,25 @@ Team Red - Spring 2025
   - z-targz - Chase Wallace - cwall043@odu.edu
 
 
+# Contributing
+
+- One reviewer required for pull requests.
+- Branches named like:
+  - `feat-[feature name]`
+  - `bug-[bug name]`
+  - `tool-[tooling change name]`
+  - `doc-[doc update name]`
+- Merge strategy: rebase and merge, so individual contributions contained in
+  commits are more obvious to graders who review the `main` branch history.
+- Commits titled like:
+  - Prefix with one or more of the following:
+    - `TOOL`: tooling change
+    - `FEAT`: feature change
+    - `FIX`: fix for a bug or other incorrect implementation
+    - `DOC`: documentation update, including code comments
+    - `INFRA`: updates to infrastructure config and/or code
+
+
 # Dev environment
 
 Required software:
@@ -114,6 +133,13 @@ To connect to the Postgres database, follow the instructions below.
     - Save password?: Yes
 5. Click "Save"
 6. It should have connected successfully.
+
+## Database migrations with Docker and Make convenience command
+
+For cross-platform compatability, we use Docker for running
+the `dbmate` migrations contained in `./db/migrations`. The `Makefile`
+details the available commands. To get started, ensure the Docker
+Postgres database is running, then issue `make dbmate-up`.
 
 # Python environment setup
 

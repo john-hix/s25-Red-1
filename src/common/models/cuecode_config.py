@@ -16,5 +16,5 @@ class CuecodeConfig(Base):
     __tablename__ = "cuecode_config"
 
     cuecode_config_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    config_is_finished = Column(Boolean)
-    is_live = Column(Boolean)
+    config_is_finished = Column(Boolean, default=False)
+    is_live = Column(Boolean, default=False)

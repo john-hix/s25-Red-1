@@ -8,7 +8,7 @@ venv: .venv/touchfile
 	. .venv/bin/activate; pip install -e .
 	touch .venv/touchfile
 
-run: venv
+run: venv node
 	. .venv/bin/activate; .venv/bin/flask --app src/app:create_app run --debug
 
 # For devs wanting to mirror a complete CI run locally before pushing to GitHub
@@ -61,9 +61,31 @@ docker-run:
 docker-down:
 	sudo docker compose -f ./docker/dev/docker-compose.yml down
 
+docker-logs:
+	sudo docker compose -f ./docker/dev/docker-compose.yml logs -f --tail=200
+
 # Removes all data
 docker-clean: docker-down
 	sudo docker volume rm cuecode-dev_pgdata cuecode-dev_pgadmindata
+
+# Run the dbmate migrations per their docs in a cross-platform way
+# https://github.com/amacneil/dbmate?tab=readme-ov-file#running-migrations
+dbmate-up:
+	sudo docker run --rm -it --network=host -v "$$(pwd)/db:/db" ghcr.io/amacneil/dbmate --url "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" up
+
+# Rollback the last dbmate migration per their docs in a cross-platform way
+# https://github.com/amacneil/dbmate?tab=readme-ov-file#rolling-back-migrations
+dbmate-rollback:
+	sudo docker run --rm -it --network=host -v "$$(pwd)/db:/db" ghcr.io/amacneil/dbmate --url "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" rollback
+
+# Dump the database schema to a file in the local dev environment
+# This happens automatically on `up` and `rollback` commands.
+# https://github.com/amacneil/dbmate?tab=readme-ov-file#exporting-schema-file
+dbmate-dump:
+	sudo docker run --rm -it --network=host -v "$$(pwd)/db:/db" ghcr.io/amacneil/dbmate --url "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" dump
+
+db-seed:
+	. .venv/bin/activate; python db/seed/dev_seed.py
 
 clean:
 	rm -rf .venv
@@ -71,5 +93,8 @@ clean:
 	find -iname "*__pycache__" -exec rm -r {} +
 	find -iname "*.pytest_cache" -exec rm -r {} +
 	find -iname "*.mypy_cache" -exec rm -r {} +
+	rm -rf node_modules/
+	rm package-lock.json
 	
-	
+npm:
+	npm install
