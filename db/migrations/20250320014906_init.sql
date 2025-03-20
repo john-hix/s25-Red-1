@@ -1,3 +1,4 @@
+-- migrate:up
 -- Enable the pgvector extension
 CREATE EXTENSION IF NOT EXISTS vector;
 
@@ -173,16 +174,11 @@ CREATE INDEX idx_openapi_verb_http_equiv_subject_id ON openapi_verb_http_equiv (
 CREATE INDEX idx_openapi_verb_http_equiv_operation_id ON openapi_verb_http_equiv (verb_applied_to_oa_operation_id);
 CREATE INDEX idx_openapi_verb_http_equiv_verb_lemma_id ON openapi_verb_http_equiv (verb_lemma_id);
 
--- Indexes on Vector Columns (for similarity search performance)
--- Use appropriate index type for your pgvector version and use case (e.g., ivfflat, hnsw)
---  ivfflat is generally faster but less accurate than hnsw
-CREATE INDEX ON openapi_operation USING ivfflat (selection_prompt_embedding vector_cosine_ops) WITH (lists = 100); -- Adjust 'lists' as needed
-CREATE INDEX ON openapi_entity USING ivfflat (noun_prompt_embedding vector_cosine_ops) WITH (lists = 100); -- Adjust 'lists' as needed
-CREATE INDEX ON verb_lemma USING ivfflat (verb_lemma_embedding vector_cosine_ops) WITH (lists = 100); --for verb_lemma table
-CREATE INDEX ON openapi_default_verb_http_equiv USING ivfflat (verb_lemma_embedding vector_cosine_ops) WITH (lists = 100); --for default_verb_lemma table
-
 -- Index on email for faster lookups
 CREATE UNIQUE INDEX idx_cuecode_account_email ON cuecode_account (email);
 
 -- Index on verb_lemma
 CREATE INDEX idx_verb_lemma ON verb_lemma(verb_lemma);
+
+-- migrate:down
+

@@ -5,7 +5,7 @@ services:
     image: pgvector/pgvector:0.8.0-pg17
     restart: unless-stopped
     ports:
-      - 127.0.0.1:5432:5432
+      - 5432:5432
     env_file: .env
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -14,19 +14,19 @@ services:
     image: dpage/pgadmin4:8.14.0
     restart: unless-stopped
     ports:
-      - 127.0.0.1:2345:80
+      - 2345:80
     env_file: .env
     volumes:
       - pgadmindata:/var/lib/pgadmin
 
-  dbmate:
-    image: ghcr.io/amacneil/dbmate:main
-    env_file: .env
-    volumes:
-      - ./db:/db
-    depends_on:
-      - postgres
-    entrypoint: [ "sh", "/db/dbmate-entrypoint.sh" ]
+#  dbmate:
+#    image: ghcr.io/amacneil/dbmate:main
+#    env_file: .env
+#    volumes:
+#      - ./db:/db
+#    depends_on:
+#      - postgres
+#    entrypoint: [ "sh", "/db/dbmate-entrypoint.sh" ]
 
 volumes:
   pgdata:
