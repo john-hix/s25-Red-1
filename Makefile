@@ -8,7 +8,7 @@ venv: .venv/touchfile
 	. .venv/bin/activate; pip install -e .
 	touch .venv/touchfile
 
-run: venv node
+run: venv
 	. .venv/bin/activate; .venv/bin/flask --app src/app:create_app run --debug
 
 # For devs wanting to mirror a complete CI run locally before pushing to GitHub
