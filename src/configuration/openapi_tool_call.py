@@ -1,3 +1,4 @@
+# pylint: skip-file
 from jsonref import JsonRef  # pylint: disable = import-error
 
 from common.models.openapi_path import OpenAPIOperation

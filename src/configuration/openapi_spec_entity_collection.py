@@ -18,4 +18,4 @@ class OpenAPISpecEntityCollection:
 
     def session_add(self, session: scoped_session):
         """Add all entities to the passed database session"""
-        # TODO: implement OpenAPISpecEntityCollection.session_add()
+        # TODO: implement OpenAPISpecEntityCollection.session_add() # pylint: disable=fixme

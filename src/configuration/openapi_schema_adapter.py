@@ -8,7 +8,6 @@ The ODU CS 411W Team Red thanks Sean Baker for finding the OpenAI example.
 """
 
 from jsonref import JsonRef, loads  # pylint: disable=import-error
-from openapi_spec_validator.readers import read_from_filename
 
 from common.models.openapi_spec import OpenAPISpec
 

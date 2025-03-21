@@ -1,17 +1,9 @@
 """The main driver for the CueCode configuration algorithm"""
 
-import subprocess
 from uuid import UUID
 
-import jsonref
-from jsonref import JsonRef  # pylint: disable = import-error
-
 from common.database_engine import DBEngine
-from common.models.openapi_entity import OpenAPIEntity
-from common.models.openapi_path import OpenAPIPath  # OpenAPIOperation
-from common.models.openapi_server import OpenAPIServer
 from common.models.openapi_spec import OpenAPISpec
-from configuration.openapi_parsing import make_oa_servers_from_json
 from configuration.openapi_schema_adapter import OpenAPISchemaAdapter
 from configuration.openapi_schema_validate import validate_openapi_spec
 from configuration.openapi_spec_entity_collection import OpenAPISpecEntityCollection
@@ -51,6 +43,7 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
     parsed_spec = from_formatted_json(UUID(openapi_spec_id), spec_json)
 
     # Pull from the parsed spec all SQLAlchemy entities represented in the spec
+    # pylint: disable-next=unused-variable
     spec_entities: OpenAPISpecEntityCollection = validator_to_entity_collection(
         parsed_spec
     )

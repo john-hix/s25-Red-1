@@ -1,3 +1,5 @@
+"""Actors for running the CueCode config algorithm"""
+
 import logging
 
 import dramatiq

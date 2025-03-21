@@ -5,7 +5,7 @@ from configuration.openapi_spec_entity_collection import OpenAPISpecEntityCollec
 
 
 def validator_to_entity_collection(
-    validator: OpenAPIObject,
+    validator: OpenAPIObject,  # pylint: disable=unused-argument
 ) -> OpenAPISpecEntityCollection:
     """Map the OpenAPI OpenAPIObject object members to SQLAlchemy entities that are
     relevant to the runtime algorithm
@@ -15,7 +15,7 @@ def validator_to_entity_collection(
     Does NOT add the SQLAlchemy entities to a database session and therefore
     does not commit them to the database.
     """
-    # TODO:
+    # TODO: # pylint: disable=fixme
     # Over Operation Object in OpenAPI spec
     # Iterate over HTTP verb in Operation object
     # Operation object has x-cuecode-exclude? Yes then

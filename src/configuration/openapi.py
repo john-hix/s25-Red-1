@@ -1,6 +1,7 @@
 """OpenAPI 3.1 Object for creating function calls and storing API info in postgres
 Docs from https://swagger.io/specification"""
 
+# pylint: skip-file
 import json
 from collections import defaultdict
 from contextvars import ContextVar
