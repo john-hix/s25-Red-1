@@ -89,6 +89,12 @@ Install make using your OS's method.
 
 Ubuntu: `sudo apt update && sudo apt install make -y`
 
+## Running application
+
+CueCode's server assumes two processes will run, the web application and a worker.
+Run these in the development environment by issuing `make run` and
+`make worker-run`, respectively.
+
 # Docker for service dependencies
 
 The project uses Docker Compose to manage application service-level dependencies,
