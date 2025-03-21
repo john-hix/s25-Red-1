@@ -7,6 +7,7 @@ from flask_wtf import FlaskForm
 from werkzeug.utils import secure_filename
 from wtforms import FileField, SubmitField
 
+from actors import actor_config_algo_openapi_spec
 from common.models import CuecodeConfig, OpenAPISpec
 from common.models.base import db
 
@@ -41,7 +42,6 @@ def create_blueprint():
     def upload_spec():
         # Design note: spec upload diagram found at the following link.
         # https://app.diagrams.net/?src=about#G1pe-I-vJEF1rdLu7zXhRyQhJHBGLgtCJX#%7B%22pageId%22%3A%22VpygQNfUVgPvtDY-Q96l%22%7D
-        # We hope to avoid using Dramatiq. use a call to ________ function instead.
         form = OpenAPISpecUploadForm()
 
         if request.method == "POST" and form.validate_on_submit():
@@ -56,15 +56,19 @@ def create_blueprint():
                 # Create DB records
                 cuecode_config = CuecodeConfig(config_is_finished=False, is_live=False)
                 db.session.add(cuecode_config)
-                db.session.commit()
 
+                spec_id = uuid.uuid4()
                 openapi_spec = OpenAPISpec(
-                    openapi_spec_id=uuid.uuid4(),
+                    openapi_spec_id=spec_id,
                     spec_text=spec_content,
                     file_name=filename,
+                    cuecode_config_id=cuecode_config.cuecode_config_id,
                 )
                 db.session.add(openapi_spec)
                 db.session.commit()
+
+                # Publish to queue
+                actor_config_algo_openapi_spec.send(str(spec_id))
 
                 flash("OpenAPI spec uploaded successfully!", "success")
                 return redirect(url_for("portal.upload_spec"))

@@ -11,6 +11,9 @@ venv: .venv/touchfile
 run: venv
 	. .venv/bin/activate; .venv/bin/flask --app src/app:create_app run --debug
 
+run-worker: venv
+	. .venv/bin/activate; dramatiq --threads 1 --processes 1 src.actors
+
 # For devs wanting to mirror a complete CI run locally before pushing to GitHub
 all-checks: style-check static lint test
 	echo "Done"

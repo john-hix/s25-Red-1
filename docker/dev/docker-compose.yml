@@ -19,6 +19,14 @@ services:
     volumes:
       - pgadmindata:/var/lib/pgadmin
 
+  redis:
+    image: redis:7.4.2
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    volumes:
+      - redisdata:/data
+
 #  dbmate:
 #    image: ghcr.io/amacneil/dbmate:main
 #    env_file: .env
@@ -31,3 +39,4 @@ services:
 volumes:
   pgdata:
   pgadmindata:
+  redisdata:
