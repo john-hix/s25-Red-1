@@ -44,19 +44,30 @@ def validator_to_entity_collection(
         session.add(path)
         # Pull only HTTP methods used for data mutation
 
-        # Experiment with only POST - making loop for all methods later
-        op_post = v_path.post
-        op_post_prompt: str = make_prompt_for_operation(path, op_post, "POST")
-        op_post_prompt_vector = None  # TODO, API call pylint: disable=unused-variable
-        db_op_post = OpenAPIOperation(
-            openapi_path_id=path.openapi_path_id,
-            path=path,
-            openapi_server_id=openapi_server.openapi_server_id,
-            http_verb="POST",
-            selection_prompt=op_post_prompt,
-            llm_content_gen_tool_call_spec=make_tool_call_spec(path, op_post, "POST"),
-        )
-        path.operations.append(db_op_post)
+        operation_info: list[dict[str, OperationObject]] = [
+            {"verb": "POST", "op_obj": v_path.post},
+            {"verb": "PATCH", "op_obj": v_path.patch},
+            {"verb": "PUT", "op_obj": v_path.put},
+            {"verb": "DELETE", "op_obj": v_path.delete},
+        ]
+
+        for op in operation_info:
+            op_obj: OperationObject = op["op_obj"]
+            op_post_prompt: str = make_prompt_for_operation(path, op_obj, "POST")
+            op_post_prompt_vector = (
+                None  # TODO, API call pylint: disable=unused-variable
+            )
+            db_op_post = OpenAPIOperation(
+                openapi_path_id=path.openapi_path_id,
+                path=path,
+                openapi_server_id=openapi_server.openapi_server_id,
+                http_verb=op["verb"],
+                selection_prompt=op_post_prompt,
+                llm_content_gen_tool_call_spec=make_tool_call_spec(
+                    path, op_obj, op["verb"]
+                ),
+            )
+            path.operations.append(db_op_post)
 
         db_spec.paths.append(path)
 
