@@ -13,7 +13,7 @@ from configuration.openapi_spec_entity_collection import OpenAPISpecEntityCollec
 from configuration.openapi_tool_call import make_tool_call_spec
 
 
-def validator_to_entity_collection(
+def openapi_spec_validator_to_cuecode_config(
     session: scoped_session,
     validator: OpenAPIObject,
     db_spec: OpenAPISpec,  # pylint: disable=unused-argument
