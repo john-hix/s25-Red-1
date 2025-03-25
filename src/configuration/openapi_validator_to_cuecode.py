@@ -52,6 +52,9 @@ def openapi_spec_validator_to_cuecode_config(
             op_obj: OperationObject = op["op_obj"]
             if not op_obj:
                 continue
+            op_prompt: str = make_selection_prompt_for_operation(
+                path_key, op_obj, op["verb"]
+            )
             # pylint: disable-next=unused-variable
             op_prompt_vector = None
             db_op = OpenAPIOperation(
@@ -77,9 +80,21 @@ def make_templated_path(path: str) -> str:
 
 
 def make_selection_prompt_for_operation(
-    path: PathItemObject,  # pylint: disable=unused-argument
-    operation_object: OperationObject,  # pylint: disable=unused-argument
+    path_str: str,  # pylint: disable=unused-argument
+    operation_object: OperationObject,
     http_verb: str,  # pylint: disable=unused-argument
 ) -> str:
-    """Create a prompt used for the selecting the operation"""
-    return ""
+    """Create a prompt used for the selecting the HTTP Operation"""
+    if operation_object and operation_object.x_cuecode_prompt:
+        return operation_object.x_cuecode_prompt
+
+    prompt = (
+        "Apply the HTTP verb "
+        + http_verb
+        + " to the REST API endpoint described by: \n"
+        + " * Path: "
+        + path_str
+    )
+    if operation_object.description:
+        prompt += "\n" + " * Description: " + operation_object.description
+    return prompt
