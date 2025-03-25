@@ -3,9 +3,11 @@ Operation Object in OpenAPI spec parlance."""
 
 import enum
 import uuid
+from typing import List
 
-from sqlalchemy import JSON, Column, Enum, ForeignKey, String, Text
+from sqlalchemy import JSON, Column, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from .base import Base
 
@@ -32,12 +34,12 @@ class OpenAPIOperation(Base):  # pylint: disable=too-few-public-methods
     # An operation can belong to a list of servers, and is said to be defined
     # for each of those servers
     # As a constraint for CueCode, there must be exactly one server per path.
-    oa_server_id = Column(
+    openapi_server_id = Column(
         UUID(as_uuid=True),
         ForeignKey("openapi_server.openapi_server_id"),
         nullable=False,
     )
-    oa_path_id = Column(
+    openapi_path_id = Column(
         UUID(as_uuid=True), ForeignKey("openapi_path.openapi_path_id"), nullable=False
     )
 
@@ -46,3 +48,5 @@ class OpenAPIOperation(Base):  # pylint: disable=too-few-public-methods
     selection_prompt = Column(Text, nullable=False)
     llm_content_gen_tool_call_spec = Column(JSON)
     # TODO: add embedding pylint: disable=fixme
+
+    path: Mapped["OpenAPIPath"] = relationship(back_populates="operations")

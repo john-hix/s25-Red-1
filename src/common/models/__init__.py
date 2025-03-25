@@ -1,10 +1,12 @@
 """SQLAlchemy models for CueCode"""
 
-# In order of dependencies
 from .base import Base
-from .cuecode_config import CuecodeConfig
-from .openapi_entity import OpenAPIEntity
-from .openapi_operation import OpenAPIOperation
-from .openapi_path import OpenAPIPath
-from .openapi_server import OpenAPIServer
-from .openapi_spec import OpenAPISpec
+
+# In order of dependencies
+from .cuecode_config import CuecodeConfig  # isort:skip
+from .openapi_entity import OpenAPIEntity  # isort:skip
+from .openapi_server import OpenAPIServer  # isort:skip
+from .openapi_spec import OpenAPISpec  # isort:skip
+
+from .openapi_path import OpenAPIPath  # isort:skip
+from .openapi_operation import OpenAPIOperation  # isort:skip
