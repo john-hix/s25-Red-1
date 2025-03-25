@@ -2,13 +2,16 @@
 from jsonref import JsonRef  # pylint: disable = import-error
 
 from common.models.openapi_path import OpenAPIOperation
+from configuration.openapi import OperationObject, PathItemObject
 
 
 def set_tool_call_spec(operation: OpenAPIOperation, operationJson: JsonRef):
     pass
 
 
-def make_tool_call_spec(pathJson) -> dict:
+def make_tool_call_spec(
+    path: PathItemObject, operation_object: OperationObject, http_verb: str
+) -> dict:
     return {}
 
     # @model_validator(mode="wrap")

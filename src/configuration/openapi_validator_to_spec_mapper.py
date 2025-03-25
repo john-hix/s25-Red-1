@@ -1,28 +1,73 @@
 """Module for OpenAPIValidatorToSpecEntitiesMapper"""
 
-from configuration.openapi import OpenAPIObject
+import uuid
+
+from sqlalchemy.orm import scoped_session
+
+from common.models.openapi_operation import OpenAPIOperation
+from common.models.openapi_path import OpenAPIPath
+from common.models.openapi_server import OpenAPIServer
+from common.models.openapi_spec import OpenAPISpec
+from configuration.openapi import OpenAPIObject, OperationObject, PathItemObject
 from configuration.openapi_spec_entity_collection import OpenAPISpecEntityCollection
+from configuration.openapi_tool_call import make_tool_call_spec
 
 
 def validator_to_entity_collection(
-    validator: OpenAPIObject,  # pylint: disable=unused-argument
+    session: scoped_session,
+    validator: OpenAPIObject,
+    db_spec: OpenAPISpec,  # pylint: disable=unused-argument
 ) -> OpenAPISpecEntityCollection:
     """Map the OpenAPI OpenAPIObject object members to SQLAlchemy entities that are
     relevant to the runtime algorithm
 
     Guarantees consistent entity relationships.
-
-    Does NOT add the SQLAlchemy entities to a database session and therefore
-    does not commit them to the database.
     """
     # TODO: # pylint: disable=fixme
-    # Over Operation Object in OpenAPI spec
-    # Iterate over HTTP verb in Operation object
-    # Operation object has x-cuecode-exclude? Yes then
-    #   next item in loop
-    # Initialize new OpenApiOperation object
-    # Operation object has x-cuecode-prompt? Yes then
-    #   Save x-cuecode-prompt to OpenApiOperation .selectionPrompt
-    # else
-    #   Save Schema Object name to OpenApiOperation .selectionPrompt
+    col = OpenAPISpecEntityCollection
+
+    openapi_server = OpenAPIServer(
+        openapi_server_id=uuid.uuid4(),
+        spec_id=db_spec.openapi_spec_id,
+        base_url=db_spec.base_url,
+    )
+    session.add(openapi_server)
+
+    for path_key in validator.paths:
+        # Get Path obj
+        v_path = validator.paths[path_key]
+        path = OpenAPIPath(
+            openapi_spec_id=db_spec.openapi_spec_id,
+            spec=db_spec,
+            path_templated=make_templated_path(path_key),
+        )
+        session.add(path)
+        # Pull only HTTP methods used for data mutation
+
+        # Experiment with only POST - making loop for all methods later
+        op_post = v_path.post
+        op_post_prompt: str = make_prompt_for_operation(path, op_post, "POST")
+        op_post_prompt_vector = None  # TODO, API call pylint: disable=unused-variable
+        db_op_post = OpenAPIOperation(
+            openapi_path_id=path.openapi_path_id,
+            path=path,
+            openapi_server_id=openapi_server.openapi_server_id,
+            http_verb="POST",
+            selection_prompt=op_post_prompt,
+            llm_content_gen_tool_call_spec=make_tool_call_spec(path, op_post, "POST"),
+        )
+        path.operations.append(db_op_post)
+
+        db_spec.paths.append(path)
+
     return OpenAPISpecEntityCollection()
+
+
+def make_templated_path(path: str) -> str:
+    return path
+
+
+def make_prompt_for_operation(
+    path: PathItemObject, operation_object: OperationObject, http_verb: str
+) -> str:
+    return ""

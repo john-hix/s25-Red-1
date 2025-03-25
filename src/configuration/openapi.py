@@ -908,7 +908,8 @@ class OperationObject(BaseModel):
     """Declares this operation to be deprecated. Consumers SHOULD refrain from 
     usage of the declared operation."""
 
-    x_cuecode: str | None = Field(alias="x-cuecode", default=None)
+    x_cuecode_prompt: str | None = Field(alias="x-cuecode-prompt", default=None)
+    x_cuecode_skip: bool | None = Field(alias="x-cuecode-skip", default=False)
 
 
 class PathItemObject(BaseModel):
@@ -984,7 +985,8 @@ class PathItemObject(BaseModel):
     See the rules for resolving 
     [Relative References](https://swagger.io/specification/#relative-references-in-api-description-uris)."""
 
-    x_cuecode: str | None = Field(alias="x-cuecode", default=None)
+    x_cuecode_prompt: str | None = Field(alias="x-cuecode-prompt", default=None)
+    x_cuecode_skip: bool | None = Field(alias="x-cuecode-skip", default=False)
 
     @model_validator(mode="after")
     def finish(self) -> Self:

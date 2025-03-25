@@ -45,9 +45,10 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
     # Pull from the parsed spec all SQLAlchemy entities represented in the spec
     # pylint: disable-next=unused-variable
     spec_entities: OpenAPISpecEntityCollection = validator_to_entity_collection(
-        parsed_spec
+        session, parsed_spec, db_spec
     )
-
+    session.add(db_spec)
+    session.commit()
     # Add
 
     # NOTE The comments below describe the config algo from the Activity Diagram

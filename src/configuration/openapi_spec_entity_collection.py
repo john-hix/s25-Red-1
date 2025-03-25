@@ -4,6 +4,7 @@ from sqlalchemy.orm import scoped_session
 
 from common.models.openapi_entity import OpenAPIEntity
 from common.models.openapi_operation import OpenAPIOperation
+from common.models.openapi_path import OpenAPIPath
 from common.models.openapi_server import OpenAPIServer
 
 
@@ -15,6 +16,7 @@ class OpenAPISpecEntityCollection:
     oa_servers: list[OpenAPIServer] = []
     oa_entities: list[OpenAPIEntity] = []
     oa_operations: list[OpenAPIOperation] = []
+    oa_paths: list[OpenAPIPath] = []
 
     def session_add(self, session: scoped_session):
         """Add all entities to the passed database session"""
