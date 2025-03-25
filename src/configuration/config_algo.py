@@ -7,7 +7,7 @@ from common.models.openapi_spec import OpenAPISpec
 from configuration.openapi_schema_adapter import OpenAPISchemaAdapter
 from configuration.openapi_schema_validate import validate_openapi_spec
 from configuration.openapi_spec_entity_collection import OpenAPISpecEntityCollection
-from configuration.openapi_validator_to_spec_mapper import (
+from configuration.openapi_validator_to_cuecode import (
     openapi_spec_validator_to_cuecode_config,
 )
 
