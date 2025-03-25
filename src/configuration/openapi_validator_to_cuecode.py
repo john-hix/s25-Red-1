@@ -50,7 +50,8 @@ def openapi_spec_validator_to_cuecode_config(
 
         for op in operation_info:
             op_obj: OperationObject = op["op_obj"]
-            op_prompt: str = make_selection_prompt_for_operation(path, op_obj, "POST")
+            if not op_obj:
+                continue
             # pylint: disable-next=unused-variable
             op_prompt_vector = None
             db_op = OpenAPIOperation(
