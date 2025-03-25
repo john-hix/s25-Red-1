@@ -4,9 +4,9 @@ the OpenAPI endpoint"""
 import uuid
 from typing import List
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, relationship
 
 from common.models.openapi_operation import OpenAPIOperation
 
@@ -25,4 +25,4 @@ class OpenAPIPath(Base):  # pylint: disable=too-few-public-methods
     path_templated = Column(String, nullable=False)
     operations: Mapped[List[OpenAPIOperation]] = relationship(back_populates="path")
 
-    spec: Mapped["OpenAPISpec"] = relationship(back_populates="paths")
+    spec: Mapped["OpenAPISpec"] = relationship(back_populates="paths")  # type: ignore

@@ -23,9 +23,6 @@ def validator_to_entity_collection(
 
     Guarantees consistent entity relationships.
     """
-    # TODO: # pylint: disable=fixme
-    col = OpenAPISpecEntityCollection
-
     openapi_server = OpenAPIServer(
         openapi_server_id=uuid.uuid4(),
         spec_id=db_spec.openapi_spec_id,
@@ -53,10 +50,11 @@ def validator_to_entity_collection(
 
         for op in operation_info:
             op_obj: OperationObject = op["op_obj"]
-            op_post_prompt: str = make_prompt_for_operation(path, op_obj, "POST")
-            op_post_prompt_vector = (
-                None  # TODO, API call pylint: disable=unused-variable
+            op_post_prompt: str = make_selection_prompt_for_operation(
+                path, op_obj, "POST"
             )
+            # pylint: disable-next=unused-variable
+            op_post_prompt_vector = None
             db_op_post = OpenAPIOperation(
                 openapi_path_id=path.openapi_path_id,
                 path=path,
@@ -75,10 +73,14 @@ def validator_to_entity_collection(
 
 
 def make_templated_path(path: str) -> str:
+    """Standardize the path string stored"""
     return path
 
 
-def make_prompt_for_operation(
-    path: PathItemObject, operation_object: OperationObject, http_verb: str
+def make_selection_prompt_for_operation(
+    path: PathItemObject,  # pylint: disable=unused-argument
+    operation_object: OperationObject,  # pylint: disable=unused-argument
+    http_verb: str,  # pylint: disable=unused-argument
 ) -> str:
+    """Create a prompt used for the selecting the operation"""
     return ""
