@@ -5,9 +5,9 @@ import enum
 import uuid
 from typing import List
 
-from sqlalchemy import JSON, Column, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import JSON, Column, Enum, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, relationship
 
 from .base import Base
 
