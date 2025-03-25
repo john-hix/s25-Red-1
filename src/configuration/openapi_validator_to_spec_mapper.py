@@ -50,22 +50,20 @@ def validator_to_entity_collection(
 
         for op in operation_info:
             op_obj: OperationObject = op["op_obj"]
-            op_post_prompt: str = make_selection_prompt_for_operation(
-                path, op_obj, "POST"
-            )
+            op_prompt: str = make_selection_prompt_for_operation(path, op_obj, "POST")
             # pylint: disable-next=unused-variable
-            op_post_prompt_vector = None
-            db_op_post = OpenAPIOperation(
+            op_prompt_vector = None
+            db_op = OpenAPIOperation(
                 openapi_path_id=path.openapi_path_id,
                 path=path,
                 openapi_server_id=openapi_server.openapi_server_id,
                 http_verb=op["verb"],
-                selection_prompt=op_post_prompt,
+                selection_prompt=op_prompt,
                 llm_content_gen_tool_call_spec=make_tool_call_spec(
                     path, op_obj, op["verb"]
                 ),
             )
-            path.operations.append(db_op_post)
+            path.operations.append(db_op)
 
         db_spec.paths.append(path)
 
