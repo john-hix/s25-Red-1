@@ -5,9 +5,10 @@ import enum
 import uuid
 from typing import List
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import JSON, Column, Enum, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
@@ -46,6 +47,7 @@ class OpenAPIOperation(Base):  # pylint: disable=too-few-public-methods
     http_verb: Column = Column(Enum(HttpVerb), nullable=False)
 
     selection_prompt = Column(Text, nullable=False)
+    selection_prompt_embedding = mapped_column(Vector(4096))
     llm_content_gen_tool_call_spec = Column(JSON)
     # TODO: add embedding pylint: disable=fixme
 
