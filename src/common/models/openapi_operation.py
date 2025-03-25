@@ -14,11 +14,11 @@ from .base import Base
 
 # Are these the only operations we plan to support?
 class HttpVerb(enum.Enum):
-    "GET",
-    "POST",
-    "PUT",
-    "PATCH",
-    "DELETE",
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    PATCH = "PATCH"
+    DELETE = "DELETE"
 
 
 class OpenAPIOperation(Base):  # pylint: disable=too-few-public-methods
