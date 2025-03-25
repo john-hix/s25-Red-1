@@ -65,13 +65,13 @@ CREATE TABLE configuration_job (
 CREATE TABLE openapi_server (
     openapi_server_id UUID PRIMARY KEY,
     spec_id UUID NOT NULL REFERENCES openapi_spec(openapi_spec_id) ON DELETE CASCADE,  -- Added ON DELETE CASCADE
-    url VARCHAR(255) NOT NULL
+    base_url VARCHAR(255) NOT NULL
 );
 
 -- openapi_path
 CREATE TABLE openapi_path (
     openapi_path_id UUID PRIMARY KEY,
-    spec_id UUID NOT NULL REFERENCES openapi_spec(openapi_spec_id) ON DELETE CASCADE,  -- Added ON DELETE CASCADE
+    openapi_spec_id UUID NOT NULL REFERENCES openapi_spec(openapi_spec_id) ON DELETE CASCADE,  -- Added ON DELETE CASCADE
     path_templated VARCHAR(255) NOT NULL
 );
 
@@ -160,7 +160,7 @@ CREATE INDEX idx_service_credential_type_id ON service_credential (type_id);
 CREATE INDEX idx_openapi_spec_config_id ON openapi_spec (cuecode_config_id);
 CREATE INDEX idx_configuration_job_spec_id ON configuration_job (openapi_spec_id);
 CREATE INDEX idx_openapi_server_spec_id ON openapi_server (spec_id);
-CREATE INDEX idx_openapi_path_spec_id ON openapi_path (spec_id);
+CREATE INDEX idx_openapi_path_spec_id ON openapi_path (openapi_spec_id);
 CREATE INDEX idx_openapi_operation_server_id ON openapi_operation (openapi_server_id);
 CREATE INDEX idx_openapi_operation_path_id ON openapi_operation (openapi_path_id);
 CREATE INDEX idx_openapi_payload_examples_op_id ON openapi_payload_examples (example_of_openapi_op_id);
@@ -181,4 +181,45 @@ CREATE UNIQUE INDEX idx_cuecode_account_email ON cuecode_account (email);
 CREATE INDEX idx_verb_lemma ON verb_lemma(verb_lemma);
 
 -- migrate:down
+DROP TABLE openapi_verb_http_equiv;
+-- openapi_verb_http_equiv
+DROP TABLE openapi_subject_of_verb;
+-- openapi_subject_of_verb
+DROP TABLE openapi_default_verb_http_equiv;
+-- openapi_default_verb_http_equiv  -- lookup table for default verb lemmas
+DROP TABLE verb_lemma;
+-- verb_lemma
+DROP TABLE openapi_entity_dependency;
+-- openapi_entity_dependency (Self-Referencing Join Table)
+DROP TABLE openapi_entity_to_operation;
+-- openapi_entity_to_operation (Join Table)
+DROP TABLE openapi_entity;
+-- openapi_entity
+DROP TABLE openapi_payload_examples;
+-- openapi_payload_examples
+DROP TABLE openapi_operation;
+-- openapi_operation
+DROP TABLE openapi_path;
+-- openapi_path
+DROP TABLE openapi_server;
+-- openapi_server
+DROP TABLE configuration_job;
+-- configuration_job
+DROP TABLE openapi_spec;
+-- openapi_spec
+DROP TABLE service_credential;
+-- service_credential
 
+DROP TABLE auth_type;
+-- auth_type
+
+DROP TABLE cuecode_config;
+-- cuecode_config
+
+DROP TABLE cuecode_api_key;
+-- cuecode_api_key
+
+DROP TABLE cuecode_account;
+-- cuecode_account
+
+DROP TYPE http_verb;

@@ -166,7 +166,7 @@ CREATE TABLE public.openapi_operation (
 
 CREATE TABLE public.openapi_path (
     openapi_path_id uuid NOT NULL,
-    spec_id uuid NOT NULL,
+    openapi_spec_id uuid NOT NULL,
     path_templated character varying(255) NOT NULL
 );
 
@@ -189,7 +189,7 @@ CREATE TABLE public.openapi_payload_examples (
 CREATE TABLE public.openapi_server (
     openapi_server_id uuid NOT NULL,
     spec_id uuid NOT NULL,
-    url character varying(255) NOT NULL
+    base_url character varying(255) NOT NULL
 );
 
 
@@ -516,7 +516,7 @@ CREATE INDEX idx_openapi_operation_server_id ON public.openapi_operation USING b
 -- Name: idx_openapi_path_spec_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX idx_openapi_path_spec_id ON public.openapi_path USING btree (spec_id);
+CREATE INDEX idx_openapi_path_spec_id ON public.openapi_path USING btree (openapi_spec_id);
 
 
 --
@@ -663,11 +663,11 @@ ALTER TABLE ONLY public.openapi_operation
 
 
 --
--- Name: openapi_path openapi_path_spec_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: openapi_path openapi_path_openapi_spec_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.openapi_path
-    ADD CONSTRAINT openapi_path_spec_id_fkey FOREIGN KEY (spec_id) REFERENCES public.openapi_spec(openapi_spec_id) ON DELETE CASCADE;
+    ADD CONSTRAINT openapi_path_openapi_spec_id_fkey FOREIGN KEY (openapi_spec_id) REFERENCES public.openapi_spec(openapi_spec_id) ON DELETE CASCADE;
 
 
 --
@@ -744,5 +744,4 @@ ALTER TABLE ONLY public.service_credential
 --
 
 INSERT INTO public.schema_migrations (version) VALUES
-    ('20250320014305'),
     ('20250320014906');
