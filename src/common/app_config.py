@@ -21,6 +21,10 @@ SQLALCHEMY_POOL_RECYCLE = int(os.getenv("SQLALCHEMY_POOL_RECYCLE", "35"))
 SQLALCHEMY_POOL_TIMEOUT = int(os.getenv("SQLALCHEMY_POOL_TIMEOUT", "7"))
 SQLALCHEMY_DATABASE_URI = DB_URI
 
+LLM_BASE_URL = str(os.getenv("LLM_BASE_URL"))
+LLM_API_KEY = str(os.getenv("LLM_API_KEY"))
+LLM_MODEL = str(os.getenv("LLM_MODEL"))
+
 
 # Flask
 # pylint: disable-next=too-few-public-methods

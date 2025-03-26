@@ -4,11 +4,12 @@ import uuid
 
 from sqlalchemy.orm import scoped_session
 
+from common.llm_client import embedding
 from common.models.openapi_operation import OpenAPIOperation
 from common.models.openapi_path import OpenAPIPath
 from common.models.openapi_server import OpenAPIServer
 from common.models.openapi_spec import OpenAPISpec
-from configuration.openapi import OpenAPIObject, OperationObject, PathItemObject
+from configuration.openapi import OpenAPIObject, OperationObject
 from configuration.openapi_spec_entity_collection import OpenAPISpecEntityCollection
 from configuration.openapi_tool_call import make_tool_call_spec
 
@@ -72,6 +73,19 @@ def openapi_spec_validator_to_cuecode_config(
         db_spec.paths.append(path)
 
     return OpenAPISpecEntityCollection()
+
+
+def create_selection_embeddings(db_spec: OpenAPISpec, session: scoped_session):
+    """Begin the long process of embedding each OpenAPI operation's selection prompt"""
+    for path in db_spec.paths:
+        for op in path.operations:
+            # When LiteLLM outage is over, use/modify this:
+            # res = llm_client.embeddings.create(
+            #     input=op.selection_prompt, model=LLM_MODEL
+            # )
+            vec = embedding(op.selection_prompt)
+            op.selection_prompt_embedding = vec
+            session.add(op)
 
 
 def make_templated_path(path: str) -> str:

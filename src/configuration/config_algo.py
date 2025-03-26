@@ -8,6 +8,7 @@ from configuration.openapi_schema_adapter import OpenAPISchemaAdapter
 from configuration.openapi_schema_validate import validate_openapi_spec
 from configuration.openapi_spec_entity_collection import OpenAPISpecEntityCollection
 from configuration.openapi_validator_to_cuecode import (
+    create_selection_embeddings,
     openapi_spec_validator_to_cuecode_config,
 )
 
@@ -47,9 +48,11 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
     spec_entities: OpenAPISpecEntityCollection = (
         openapi_spec_validator_to_cuecode_config(session, parsed_spec, db_spec)
     )
+
     session.add(db_spec)
+
+    create_selection_embeddings(db_spec, session)
     session.commit()
-    # Add
 
     # NOTE The comments below describe the config algo from the Activity Diagram
     # in our Design docs, but it does NOT really follow how the code will be
