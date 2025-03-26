@@ -99,16 +99,19 @@ def make_selection_prompt_for_operation(
     http_verb: str,  # pylint: disable=unused-argument
 ) -> str:
     """Create a prompt used for the selecting the HTTP Operation"""
-    if operation_object and operation_object.x_cuecode_prompt:
-        return operation_object.x_cuecode_prompt
+    desc = ""
+    if operation_object:
+        if operation_object.x_cuecode_prompt:
+            desc = operation_object.x_cuecode_prompt
+        else:
+            desc = operation_object.description
 
     prompt = (
-        "Apply the HTTP verb "
+        desc
+        + ". This is done by applying the HTTP verb "
         + http_verb
-        + " to the REST API endpoint described by: \n"
-        + " * Path: "
+        + " to the REST API endpoint with path '"
         + path_str
+        + "'."
     )
-    if operation_object.description:
-        prompt += "\n" + " * Description: " + operation_object.description
     return prompt
