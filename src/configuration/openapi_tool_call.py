@@ -2,145 +2,84 @@
 from jsonref import JsonRef  # pylint: disable = import-error
 
 from common.models.openapi_path import OpenAPIOperation
-from configuration.openapi import OperationObject, PathItemObject
+from configuration.openapi import OperationObject, PathItemObject, OpenAPIObject, ServerObject
+from typing import List
 
+from uuid import UUID, uuid4
 
 def set_tool_call_spec(operation: OpenAPIOperation, operationJson: JsonRef):
     pass
 
-
 def make_tool_call_spec(
-    path: PathItemObject, operation_object: OperationObject, http_verb: str
+    path: PathItemObject,
+    path_name: str,
+    operation_object: OperationObject,
+    http_verb: str,
+    func_prompt: str,
 ) -> dict:
-    return {}
 
-    # @model_validator(mode="wrap")
-    # @classmethod
-    # def validate_model(cls, values, handler):
-    #     if values["servers"] is None or values["servers"].empty():
-    #         values["servers"] = [
-    #             ServerObject(
-    #                 url=values["base_url"],
-    #                 description=None,
-    #                 variables=None,
-    #                 uuid=uuid5(namespace=NAMESPACE_URL, name="/"),
-    #                 oas_uuid=id.get(),
-    #             )
-    #         ]
+    
 
-    #     try:
-    #         spec_id = values["openapi_spec_id"]
-    #     except KeyError:
-    #         raise ValueError(
-    #             "openapi_spec_id must be passed first as a `uuid.UUID` object"
-    #         )
 
-    #     try:
-    #         session = values["db_session"]
-    #     except KeyError:
-    #         raise ValueError(
-    #             "db_session must be passed as the second positional keyword"
-    #         )
+    params: dict = {}
+    required = []
+    if operation_object.parameters is not None:
+        for param in operation_object.parameters:
 
-    #     try:
-    #         base_url = values["base_url"]
-    #     except KeyError:
-    #         raise ValueError("base_url must be passed as the third positional keyword")
+            if param.schema_ is None:
+                continue
 
-    #     id_token = openapi_spec_id.set(values["openapi_spec_uuid"])
-    #     config_info[spec_id]["session"] = session
-    #     # session_token = context_session.set(values.pop("db_session"))
-    #     # tag_uuids_token = context_tag_uuids.set({})
-    #     try:
-    #         return handler(values)
-    #     finally:
-    #         # context_session.reset(session_token)
-    #         openapi_spec_id.reset(id_token)
-    #         # tag_uuids_token.reset(tag_uuids_token)
+            param_description = param.x_cuecode_prompt
+            if param_description is None:
+                param_description = param.description
+            param_info: dict = {}
+            if param.schema_ is not None:
+                param_info = param.schema_
 
-    # # TODO: Review & test this, high priority
-    # @staticmethod
-    # def _gen_func(
-    #     servers: List[ServerObject],
-    #     path: str,
-    #     operation: OperationObject,
-    #     operation_name: str,
-    # ) -> dict:
-    #     if operation.servers is not None:
-    #         servers = operation.servers
+            if param_description is not None:
+                param_info["description"] = param_description
+            if param.examples is not None:
+                param_info["examples"] = param.examples
 
-    #     func_name = path + "+" + operation_name
-    #     func_description = operation.x_cuecode
-    #     if func_description is None:
-    #         func_description = operation.description
-    #     if func_description is None:
-    #         func_description = operation.summary
+            param_name = param.in_ + "+" + param.name
+            params[param_name] = param_info
 
-    #     params: dict = {}
-    #     required = []
-    #     if operation.parameters is not None:
-    #         for param in operation.parameters:
+            if param.required:
+                required.append(param_name)
 
-    #             if not isinstance(param, ParameterObjectSchema):
-    #                 continue
+    props: dict = {**params}
+    if operation_object.request_body is not None:
+        request_body_required = False
+        if operation_object.request_body.required:
+            required.append("requestBody")
 
-    #             param_description = param.x_cuecode
-    #             if param.description is None:
-    #                 param_description = param.description
-    #             param_info: dict = {}
-    #             if param.schema_ is not None:
-    #                 param_info = param.schema_
+        one_of: dict = {}
 
-    #             if param_description is not None:
-    #                 param_info["description"] = param_description
-    #             if param.examples is not None:
-    #                 param_info["examples"] = param.examples
+        for k, v in operation_object.request_body.content.items():
+            param_info = {}
+            if v.schema_ is not None:
+                param_info = v.schema_
 
-    #             param_name = param.in_ + "/" + param.name
-    #             params[param_name] = param_info
+            one_of[k] = param_info
 
-    #             if param.required:
-    #                 required.append(param_name)
+        request_body: dict = {"requestBody": {"type": "object", "oneOf": one_of}}
+        props.update(**request_body)
+    out: dict = {}
 
-    #     if operation.request_body is not None:
-    #         request_body_required = False
-    #         if operation.request_body.required:
-    #             request_body_required = True
-    #             required.append("requestBody")
 
-    #         one_of: dict = {}
-
-    #         for k, v in operation.request_body.content.items():
-    #             param_info = {}
-    #             if v.schema_ is not None:
-    #                 param_info = v.schema_
-
-    #             one_of[k] = param_info
-
-    #         request_body: dict = {"requestBody": {"type": "object", "oneOf": one_of}}
-
-    #     out: dict = {}
-
-    #     if len(servers) > 1:
-    #         raise ValueError(
-    #             "Per CueCode restrictions, each unique path must have one and only one server"
-    #         )
-
-    #     for server in servers:
-    #         out[(server.uuid.int, server.url + path)] = {
-    #             "type": "function",
-    #             "function": {
-    #                 "name": server.url + func_name,
-    #                 "description": func_description,
-    #                 "parameters": {
-    #                     "type": "object",
-    #                     "properties": {**params, **request_body},
-    #                 },
-    #                 "required": required,
-    #             },
-    #         }
-
-    #     return out
+    out = {
+        "type": "function",
+        "function": {
+            "name": path_name + "+" + http_verb,
+            "description": func_prompt,
+            "parameters": {
+                "type": "object",
+                "properties": props,
+            },
+            "required": required,
+        },
+    }
+    return out
 
     # def generate_tools(self) -> dict[int, list]:
     #     """generate function calls for the api"""

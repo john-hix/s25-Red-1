@@ -2,6 +2,8 @@
 
 import uuid
 
+from urllib.parse import urlparse
+
 from sqlalchemy.orm import scoped_session
 
 from common.llm_client import embedding
@@ -24,12 +26,27 @@ def openapi_spec_validator_to_cuecode_config(
 
     Guarantees consistent entity relationships.
     """
-    openapi_server = OpenAPIServer(
-        openapi_server_id=uuid.uuid4(),
-        spec_id=db_spec.openapi_spec_id,
-        base_url=db_spec.base_url,
-    )
-    session.add(openapi_server)
+
+
+
+    for server in validator.servers:
+        if not urlparse(server.url):
+            pass
+            # raise ValueError("{} is not a fully qualified URL.".format(server.url))
+
+        openapi_server = OpenAPIServer(
+            openapi_server_id=uuid.uuid5(namespace=db_spec.openapi_spec_id, name=server.url),
+            spec_id=db_spec.openapi_spec_id,
+            url=server.url,
+        )
+        session.add(openapi_server)
+
+    # openapi_server = OpenAPIServer(
+    #     openapi_server_id=uuid.uuid4(),
+    #     spec_id=db_spec.openapi_spec_id,
+    #     base_url=db_spec.base_url,
+    # )
+    # session.add(openapi_server)
 
     for path_key in validator.paths:
         # Get Path obj
@@ -48,6 +65,10 @@ def openapi_spec_validator_to_cuecode_config(
             {"verb": "PUT", "op_obj": v_path.put},
             {"verb": "DELETE", "op_obj": v_path.delete},
         ]
+       
+        path_server = validator.servers[0]
+        if v_path.servers is not None:
+            path_server = v_path.servers[0]
 
         for op in operation_info:
             op_obj: OperationObject = op["op_obj"]
@@ -58,14 +79,19 @@ def openapi_spec_validator_to_cuecode_config(
             )
             # pylint: disable-next=unused-variable
             op_prompt_vector = None
+
+            op_server = path_server
+            if op_obj.servers is not None:
+                op_server = op_obj.servers[0]
+
             db_op = OpenAPIOperation(
                 openapi_path_id=path.openapi_path_id,
                 path=path,
-                openapi_server_id=openapi_server.openapi_server_id,
+                openapi_server_id=uuid.uuid5(db_spec.openapi_spec_id, op_server),
                 http_verb=op["verb"],
                 selection_prompt=op_prompt,
                 llm_content_gen_tool_call_spec=make_tool_call_spec(
-                    path, op_obj, op["verb"]
+                    path, path_key, op_obj, op["verb"], op_prompt
                 ),
             )
             path.operations.append(db_op)
@@ -109,6 +135,8 @@ def make_selection_prompt_for_operation(
         + " * Path: "
         + path_str
     )
+    if operation_object.summary:
+        prompt += "\n" + " * Summary: " + operation_object.summary
     if operation_object.description:
         prompt += "\n" + " * Description: " + operation_object.description
     return prompt
