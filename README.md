@@ -147,6 +147,15 @@ the `dbmate` migrations contained in `./db/migrations`. The `Makefile`
 details the available commands. To get started, ensure the Docker
 Postgres database is running, then issue `make dbmate-up`.
 
+## Database seed
+
+You must seed the database with test data by running `make db-seed`.
+
+Some integration tests rely on the seeded data being the database when the
+tests are run.
+
+
+
 # Python environment setup
 
 With Python installed on your system, complete the following:
