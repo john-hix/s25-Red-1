@@ -14,7 +14,9 @@ from common.models.openapi_spec import OpenAPISpec
 from configuration.openapi import OpenAPIObject, OperationObject
 from configuration.openapi_spec_entity_collection import OpenAPISpecEntityCollection
 from configuration.openapi_tool_call import make_tool_call_spec
-
+import json
+import jsonref
+from pprint import pprint
 
 def openapi_spec_validator_to_cuecode_config(
     session: scoped_session,
@@ -37,7 +39,7 @@ def openapi_spec_validator_to_cuecode_config(
         openapi_server = OpenAPIServer(
             openapi_server_id=uuid.uuid5(namespace=db_spec.openapi_spec_id, name=server.url),
             spec_id=db_spec.openapi_spec_id,
-            url=server.url,
+            base_url=server.url,
         )
         session.add(openapi_server)
 
@@ -84,15 +86,22 @@ def openapi_spec_validator_to_cuecode_config(
             if op_obj.servers is not None:
                 op_server = op_obj.servers[0]
 
+
+            tool_call_spec = jsonref.replace_refs(make_tool_call_spec(
+                path_name=path_key,
+                operation_object=op_obj,
+                http_verb=op["verb"],
+                func_prompt=op_prompt.replace('\n', " ")
+            ))
+
             db_op = OpenAPIOperation(
                 openapi_path_id=path.openapi_path_id,
                 path=path,
-                openapi_server_id=uuid.uuid5(db_spec.openapi_spec_id, op_server),
+                openapi_server_id=uuid.uuid5(db_spec.openapi_spec_id, op_server.url),
+                #openapi_server_id=uuid.uuid4(),
                 http_verb=op["verb"],
                 selection_prompt=op_prompt,
-                llm_content_gen_tool_call_spec=make_tool_call_spec(
-                    path, path_key, op_obj, op["verb"], op_prompt
-                ),
+                llm_content_gen_tool_call_spec=tool_call_spec
             )
             path.operations.append(db_op)
 
@@ -109,8 +118,8 @@ def create_selection_embeddings(db_spec: OpenAPISpec, session: scoped_session):
             # res = llm_client.embeddings.create(
             #     input=op.selection_prompt, model=LLM_MODEL
             # )
-            vec = embedding(op.selection_prompt)
-            op.selection_prompt_embedding = vec
+            # vec = embedding(op.selection_prompt)
+            # op.selection_prompt_embedding = vec
             session.add(op)
 
 

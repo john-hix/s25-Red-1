@@ -11,16 +11,11 @@ def set_tool_call_spec(operation: OpenAPIOperation, operationJson: JsonRef):
     pass
 
 def make_tool_call_spec(
-    path: PathItemObject,
     path_name: str,
     operation_object: OperationObject,
     http_verb: str,
     func_prompt: str,
 ) -> dict:
-
-    
-
-
     params: dict = {}
     required = []
     if operation_object.parameters is not None:
@@ -32,6 +27,7 @@ def make_tool_call_spec(
             param_description = param.x_cuecode_prompt
             if param_description is None:
                 param_description = param.description
+
             param_info: dict = {}
             if param.schema_ is not None:
                 param_info = param.schema_
@@ -49,7 +45,6 @@ def make_tool_call_spec(
 
     props: dict = {**params}
     if operation_object.request_body is not None:
-        request_body_required = False
         if operation_object.request_body.required:
             required.append("requestBody")
 
