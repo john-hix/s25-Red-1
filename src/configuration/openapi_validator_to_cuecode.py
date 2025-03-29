@@ -134,8 +134,6 @@ def make_selection_prompt_for_operation(
     http_verb: str,  # pylint: disable=unused-argument
 ) -> str:
     """Create a prompt used for the selecting the HTTP Operation"""
-    if operation_object and operation_object.x_cuecode_prompt:
-        return operation_object.x_cuecode_prompt
 
     prompt = (
         "Apply the HTTP verb "
@@ -144,6 +142,12 @@ def make_selection_prompt_for_operation(
         + " * Path: "
         + path_str
     )
+
+    if operation_object and operation_object.x_cuecode_prompt:
+        prompt += "\n" + " * Summary: " + operation_object.x_cuecode_prompt
+        return prompt
+
+    
     if operation_object.summary:
         prompt += "\n" + " * Summary: " + operation_object.summary
     if operation_object.description:
