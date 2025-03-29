@@ -17,4 +17,4 @@ class OpenAPIServer(Base):  # pylint: disable=too-few-public-methods
     spec_id = Column(
         UUID(as_uuid=True), ForeignKey("openapi_spec.openapi_spec_id"), nullable=False
     )
-    url = Column(String, nullable=False)
+    base_url = Column(String, nullable=False)

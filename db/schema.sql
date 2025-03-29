@@ -189,7 +189,7 @@ CREATE TABLE public.openapi_payload_examples (
 CREATE TABLE public.openapi_server (
     openapi_server_id uuid NOT NULL,
     spec_id uuid NOT NULL,
-    url character varying(255) NOT NULL
+    base_url character varying(255) NOT NULL
 );
 
 
