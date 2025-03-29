@@ -847,7 +847,7 @@ def paths(spec_id) -> dict[str, PathItemObject]:
     }
 
 def test_servers(spec_id, openapi_object):
-    servers = [ServerObject(url="/api/v3")]
+    servers = [ServerObject(base_url="/api/v3")]
     assert openapi_object.servers == servers
 
 def test_paths(openapi_object, paths):
