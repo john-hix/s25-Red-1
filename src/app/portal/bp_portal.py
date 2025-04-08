@@ -54,7 +54,11 @@ def create_blueprint():
                 )  # Read the content as text
 
                 # Create DB records
-                cuecode_config = CuecodeConfig(config_is_finished=False, is_live=False)
+                cuecode_config = CuecodeConfig(
+                    cuecode_config_id=uuid.uuid4(),
+                    config_is_finished=False,
+                    is_live=False,
+                )
                 db.session.add(cuecode_config)
 
                 spec_id = uuid.uuid4()

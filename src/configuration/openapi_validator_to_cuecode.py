@@ -24,6 +24,9 @@ def openapi_spec_validator_to_cuecode_config(
 
     Guarantees consistent entity relationships.
     """
+    db_spec.base_url = validator.base_url
+    session.add(db_spec)
+
     openapi_server = OpenAPIServer(
         openapi_server_id=uuid.uuid4(),
         spec_id=db_spec.openapi_spec_id,
@@ -35,6 +38,7 @@ def openapi_spec_validator_to_cuecode_config(
         # Get Path obj
         v_path = validator.paths[path_key]
         path = OpenAPIPath(
+            openapi_path_id=uuid.uuid4(),
             openapi_spec_id=db_spec.openapi_spec_id,
             spec=db_spec,
             path_templated=make_templated_path(path_key),
