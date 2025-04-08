@@ -155,6 +155,14 @@ Some integration tests rely on the seeded data being the database when the
 tests are run.
 
 
+## Redis
+
+### Redis commander
+
+Access Redis commander in the dev environment at http:localhost:1337.
+
+To remove dead letters from the dramatiq message queue, remove
+the `dramatiq:default.DQ.messages` key.
 
 # Python environment setup
 
