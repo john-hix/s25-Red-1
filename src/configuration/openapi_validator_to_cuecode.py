@@ -1,5 +1,6 @@
 """Module for OpenAPIValidatorToSpecEntitiesMapper"""
 
+import logging
 import uuid
 
 from sqlalchemy.orm import scoped_session
@@ -87,6 +88,7 @@ def create_selection_embeddings(db_spec: OpenAPISpec, session: scoped_session):
             # res = llm_client.embeddings.create(
             #     input=op.selection_prompt, model=LLM_MODEL
             # )
+            logging.warning("Calling Ollama")
             vec = embedding(op.selection_prompt)
             op.selection_prompt_embedding = vec
             session.add(op)
