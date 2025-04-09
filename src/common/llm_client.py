@@ -1,5 +1,7 @@
 """Interface to the litellm server to which we have access for the prototype"""
 
+import os
+
 import requests  # pylint: disable=unused-import
 from ollama import Client
 
@@ -35,5 +37,8 @@ ollama_client = Client(host="http://192.168.17.7:11434")
 
 def embedding(text) -> dict | None:
     """Get the embedding for some text"""
+    should_stub = os.getenv("TEMP_STUB_LLM", "true") == "true"
+    if should_stub:
+        return None  # type: ignore
     ollama_response = ollama_client.embed(model="llama3.1:8b", input=text)
     return ollama_response.get("embeddings")[0]
