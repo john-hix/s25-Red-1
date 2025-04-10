@@ -166,7 +166,9 @@ the `dramatiq:default.DQ.messages` key.
 
 # Python environment setup
 
-With Python installed on your system, complete the following:
+Install Python 3.12.10. [Pyenv](https://github.com/pyenv/pyenv) use recommended.
+
+With Python 3.12.10 installed on your system, complete the following:
 
 1. Create a .venv folder: `make venv`
 2. Open VSCode and confirm that VSCode errors to do not appear when you open
