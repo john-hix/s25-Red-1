@@ -1,7 +1,9 @@
 [project]
 name = "src"
 version = "0.0.0"
-requires-python = ">= 3.13"
+# Python kept back due to spaCy dependency.
+# https://github.com/explosion/spaCy/issues/13658#issuecomment-2532080140
+requires-python = ">=3.12.10,<3.13"
 
 # This config used from the following source, which also documents the pylint
 # extension in use:
