@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Account{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Welcome to your Account, {{ username }}!</h1>
+    <hr>
+
+    {# --- Reset Password Section --- #}
+    <h2>Password Management</h2>
+    <form method="POST" action="{{ url_for('reset_password') }}" style="display: inline-block;">
+        <button type="submit" class="btn btn-warning">Reset Password</button>
+    </form>
+    <hr>
+
+    {# --- OpenAPI Upload Section --- #}
+    <h2>Upload OpenAPI Specification</h2>
+    <form id="uploadForm" method="POST" action="{{ url_for('upload_openapi') }}" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="openapi_spec" class="form-label">Select OpenAPI JSON file:</label>
+            <input class="form-control" type="file" id="openapi_spec" name="openapi_spec" accept=".json" required>
+        </div>
+        <button id="uploadSubmitBtn" type="submit" class="btn btn-success">Upload</button>
+    </form>
+
+</div>
+
+{# --- upload the config processing with updates --- #}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const uploadForm = document.getElementById('uploadForm');
+        const submitButton = document.getElementById('uploadSubmitBtn');
+        const fileInput = document.getElementById('openapi_spec');
+        if (uploadForm && submitButton && fileInput) {
+            uploadForm.addEventListener('submit', function (event) {
+                if (fileInput.files.length === 0) {
+                    return;
+                }
+
+                submitButton.textContent = 'Processing...';
+                submitButton.disabled = true;
+
+                submitButton.classList.add('processing');
+            });
+        } else {
+            console.error("Could not find upload form elements (form, button, or input).");
+        }
+    });
+</script>
+{% endblock %}
