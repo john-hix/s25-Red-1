@@ -63,5 +63,8 @@ nav:
   - Team: team.md
   - Labs: labs.md
   - Prototype: prototype.md
+  # target attribute injection, like SQL injection: it is intentional not to
+  # have a quote at the beginning of this link.
+  - User Manual: https://github.com/john-hix/s25-Red-1/wiki" target="_blank"
 
 
