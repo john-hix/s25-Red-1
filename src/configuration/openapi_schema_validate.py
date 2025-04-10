@@ -19,6 +19,10 @@ def validate_openapi_spec(spec: OpenAPISpec, temp_file_dir="/tmp"):
     # is running on (in).
     file_name = "cuecode_openapi_spec_" + str(uuid4())
     file_path = os.path.join(temp_file_dir, file_name)
+
+    # Create temp directory if it doesn't exist.
+    os.makedirs(temp_file_dir, exist_ok=True)
+
     with open(file_path, "w", encoding="UTF-8") as f:
         f.write(spec.spec_text)
     spec_tuple = read_from_filename(file_path)
