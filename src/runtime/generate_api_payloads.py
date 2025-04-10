@@ -1,9 +1,12 @@
+"""Module to general API payloads"""
+
 import psycopg2
 
 from common.llm_client import embedding
 
 
 def simple_endpoint_search(configuration_id: str, natural_language_text: str):
+    """Example of the similarity search"""
 
     ollama_response = embedding(natural_language_text)
 
@@ -18,7 +21,8 @@ def simple_endpoint_search(configuration_id: str, natural_language_text: str):
     cursor = conn.cursor()
 
     cosine_simililarity_search_sql = (
-        "SELECT 1 - (selection_prompt_embedding <=> %s) AS cosine_similarity, openapi_operation_id, "
+        "SELECT 1 - (selection_prompt_embedding <=> %s) AS cosine_similarity, "
+        + " openapi_operation_id, "
         + "o.openapi_server_id, openapi_path_id, http_verb, selection_prompt, "
         + "llm_content_gen_tool_call_spec "
         + "FROM openapi_operation as o "
