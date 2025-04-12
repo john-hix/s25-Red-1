@@ -3,11 +3,13 @@ from uuid import UUID, uuid4
 from pytest import fixture
 
 import jsonref
+import json
 
 from configuration.openapi import OpenAPIObject, ServerObject, PathItemObject, OperationObject, RequestBodyObject, MediaTypeObject, ResponseObject, ParameterObject, HeaderObject
 from configuration import config_algo
 from pathlib import Path
 from configuration.openapi_schema_adapter import OpenAPISchemaAdapter
+from configuration.openapi_validator_to_cuecode import make_tool_call_spec, make_selection_prompt_for_operation
 
 @fixture
 def spec_id() -> UUID:
@@ -847,8 +849,73 @@ def paths(spec_id) -> dict[str, PathItemObject]:
     }
 
 def test_servers(spec_id, openapi_object):
-    servers = [ServerObject(base_url="/api/v3")]
+    servers = [ServerObject(url="/api/v3")]
     assert openapi_object.servers == servers
 
 def test_paths(openapi_object, paths):
     assert openapi_object.paths == paths
+
+# Leaving this commented for easily generating the pet-store-31-tools.json file 
+# when build is in a working state.
+# def test_gen_tools(paths):
+#     output_file = Path(__file__).parent.parent / "fixtures" / "tools" / "pet-store-31-tools.json"
+#     with open(output_file, "w") as file:
+#         out: dict = {}
+#         for path_key in paths:
+#             path = paths[path_key]
+#             operation_info: list[dict[str, OperationObject]] = [
+#                 {"verb": "POST", "op_obj": path.post},
+#                 {"verb": "PATCH", "op_obj": path.patch},
+#                 {"verb": "PUT", "op_obj": path.put},
+#                 {"verb": "DELETE", "op_obj": path.delete},
+#             ]
+#             out[path_key] = {}
+#             for op in operation_info:
+#                 op_obj: OperationObject = op["op_obj"]
+#                 if not op_obj:
+#                     continue
+#                 op_prompt: str = make_selection_prompt_for_operation(
+#                     path_key, op_obj, op["verb"]
+#                 )
+#                 tool_call_spec = jsonref.replace_refs(make_tool_call_spec(
+#                     path_name=path_key,
+#                     operation_object=op_obj,
+#                     http_verb=op["verb"],
+#                     func_prompt=op_prompt.replace('\n', " ")
+#                 ))
+#                 out[path_key][op["verb"]] = tool_call_spec
+#         file.write(json.dumps(out))
+
+def test_tools(paths):
+    """Regression test for generated tool calls"""
+    generated_tools: dict = {}
+    for path_key in paths:
+        path = paths[path_key]
+        operation_info: list[dict[str, OperationObject]] = [
+            {"verb": "POST", "op_obj": path.post},
+            {"verb": "PATCH", "op_obj": path.patch},
+            {"verb": "PUT", "op_obj": path.put},
+            {"verb": "DELETE", "op_obj": path.delete},
+        ]
+        generated_tools[path_key] = {}
+        for op in operation_info:
+            op_obj: OperationObject = op["op_obj"]
+            if not op_obj:
+                continue
+            op_prompt: str = make_selection_prompt_for_operation(
+                path_key, op_obj, op["verb"]
+            )
+
+            tool_call_spec = jsonref.replace_refs(make_tool_call_spec(
+                path_name=path_key,
+                operation_object=op_obj,
+                http_verb=op["verb"],
+                func_prompt=op_prompt.replace('\n', " ")
+            ))
+
+            generated_tools[path_key][op["verb"]] = tool_call_spec
+    
+    input_file = Path(__file__).parent.parent / "fixtures" / "tools" / "pet-store-31-tools.json"
+    with open(input_file, "r") as file:
+        pet_store_tools = json.loads(input_file.read_bytes())
+        assert generated_tools == pet_store_tools
