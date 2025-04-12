@@ -44,7 +44,7 @@ class ExampleObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -79,7 +79,7 @@ class ContactObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -103,7 +103,7 @@ class LicenseObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -129,7 +129,7 @@ class InfoObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -171,7 +171,7 @@ class ServerVariableObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -203,7 +203,7 @@ class ServerObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -260,7 +260,7 @@ class ExternalDocumentationObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -314,7 +314,7 @@ class ParameterObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -360,10 +360,11 @@ class ParameterObject(BaseModel):
     Use of this field is NOT RECOMMENDED, 
     and it is likely to be removed in a later revision."""
 
-    x_cuecode: str | None = Field(default=None, alias="x-cuecode")
+    x_cuecode_prompt: str | None = Field(default=None, alias="x-cuecode-prompt")
+    x_cuecode_skip: bool | None = Field(alias="x-cuecode-skip", default=False)
 
-    # @model_validator(mode="after")
-    # def finish(self) -> Self:
+    # def db_insert(self) -> Self:
+    #     """Insert OpenAPI Object into relevant database tables"""
     #     session: scoped_session = config_info[openapi_spec_id.get()]["session"]
     #     noun_prompt = self.x_cuecode
     #     if noun_prompt is None:
@@ -387,30 +388,38 @@ class ParameterObject(BaseModel):
     #         )
     #     return self
 
+    style: str | None = None
 
-class ParameterObjectSchema(ParameterObject):
-    model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            validation_alias=to_snake,
-            serialization_alias=to_camel,
-        ),
-        populate_by_name=True,
-        extra="allow",
-    )
+    @model_validator(mode="before")
+    @classmethod
+    def validate_style(cls, values) -> dict:
+        if "schema" in values:
+            if "style" not in values:
+                if values["in"] == "query" or values["in"] == "cookie":
+                    values["style"] = "form"
+                elif values["in"] == "path" or values["in"] == "header":
+                    values["style"] = "simple"
+        return values
 
-    style: str
+    def __init__(self, **values):
+        
+        super().__init__(**values)
+        # if "schema" in values:
+        #     if "style" not in values:
+        #         if values["in"] == "query" or "cookie":
+        #             values["style"] = "form"
+        #         elif values["in"] == "path" or "header":
+        #             values["style"] = "simple"
+        if self.schema_ is not None:
+            if self.style is None:
+                if self.in_ == "query" or "cookie":
+                    self.style = "form"
+                elif self.in_ == "path" or "header":
+                    self.style = "simple"
 
-    # @model_validator(mode="before")
-    # def validate_style(cls, values):
-    #     if not "style" in data:
-    #         if values["in"] == "query" or "cookie":
-    #             values["style"] = "form"
-    #         elif values["in"] == "path" or "header":
-    #             values["style"] = "simple"
+    explode: bool | None = False
 
-    explode: bool = False
-
-    allow_reserved: bool = False
+    allow_reserved: bool | None = False
 
     schema_: dict[str, Any] | None = Field(default=None, alias="schema")
     """Schema for parameters"""
@@ -419,16 +428,6 @@ class ParameterObjectSchema(ParameterObject):
 
     examples: dict[str, ExampleObject] | None = None
 
-
-class ParameterObjectContent(ParameterObject):
-    model_config = ConfigDict(
-        alias_generator=AliasGenerator(
-            validation_alias=to_snake,
-            serialization_alias=to_camel,
-        ),
-        populate_by_name=True,
-        extra="allow",
-    )
     content: dict[str, "MediaTypeObject"] | None = None
 
 
@@ -445,7 +444,7 @@ class DiscriminatorObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -472,7 +471,7 @@ class XMLObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -512,7 +511,7 @@ class SchemaObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -571,7 +570,7 @@ class HeaderObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -591,8 +590,6 @@ class HeaderObject(BaseModel):
     """Specifies that the header is deprecated and 
     SHOULD be transitioned out of usage."""
 
-
-class HeaderObjectSchema(HeaderObject):
     style: str | None = "simple"
     """Describes how the header value will be serialized. 
     The default (and only legal value for headers) is "simple"."""
@@ -605,12 +602,10 @@ class HeaderObjectSchema(HeaderObject):
 
     schema_: SchemaObject | None = Field(alias="schema", default=None)
 
-    example: Any
+    example: Any | None = None
 
     examples: dict[str, ExampleObject] | None = None
 
-
-class HeaderObjectContent(HeaderObject):
     content: dict[str, "MediaTypeObject"] | None = None
     """A map containing the representations for the header. 
     The key is the media type and the value describes it. 
@@ -637,7 +632,7 @@ class EncodingObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -673,7 +668,7 @@ class MediaTypeObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -708,7 +703,7 @@ class RequestBodyObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -749,7 +744,7 @@ class LinkObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -789,7 +784,7 @@ class ResponseObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -828,7 +823,7 @@ class OperationObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -921,7 +916,7 @@ class PathItemObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake, serialization_alias=to_camel
+            validation_alias=to_camel, serialization_alias=to_camel
         ),
         populate_by_name=True,
         extra="allow",
@@ -988,11 +983,6 @@ class PathItemObject(BaseModel):
     x_cuecode_prompt: str | None = Field(alias="x-cuecode-prompt", default=None)
     x_cuecode_skip: bool | None = Field(alias="x-cuecode-skip", default=False)
 
-    @model_validator(mode="after")
-    def finish(self) -> Self:
-        # TODO: After validation for Path Object
-        return self
-
 
 context_tag_uuids: ContextVar[dict] = ContextVar("tag_uuids")
 context_tags: ContextVar[dict] = ContextVar("tags")
@@ -1003,7 +993,7 @@ class TagObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake, serialization_alias=to_camel
+            validation_alias=to_camel, serialization_alias=to_camel
         ),
         populate_by_name=True,
         extra="allow",
@@ -1015,7 +1005,8 @@ class TagObject(BaseModel):
     """A description for the tag. 
     CommonMark syntax MAY be used for rich text representation."""
 
-    x_cuecode: str | None = Field(default=None, alias="x-cuecode")
+    x_cuecode_prompt: str | None = Field(default=None, alias="x-cuecode-prompt")
+    x_cuecode_skip: bool | None = Field(alias="x-cuecode-skip", default=False)
 
     externalDocs: ExternalDocumentationObject | None = None
 
@@ -1053,7 +1044,7 @@ class OAuthFlowObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -1088,7 +1079,7 @@ class OAuthFlowsObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -1106,7 +1097,7 @@ class SecuritySchemeObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -1157,7 +1148,7 @@ class ComponentsObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake,
+            validation_alias=to_camel,
             serialization_alias=to_camel,
         ),
         populate_by_name=True,
@@ -1190,7 +1181,7 @@ class OpenAPIObject(BaseModel):
 
     model_config = ConfigDict(
         alias_generator=AliasGenerator(
-            validation_alias=to_snake, serialization_alias=to_camel
+            validation_alias=to_camel, serialization_alias=to_camel
         ),
         populate_by_name=True,
         extra="allow",
@@ -1227,3 +1218,140 @@ class OpenAPIObject(BaseModel):
     tags: List[TagObject] | None = None
 
     components: ComponentsObject | None = None
+
+    # def db_insert(self, db_session: scoped_session, is_test: bool) -> Self:
+    #     """Insert OpenAPI Object into database"""
+
+    #     if self.base_url is None:
+    #         raise ValueError("_base_url missing")
+    #     if self.openapi_spec_uuid is None:
+    #         raise ValueError("_openapi_spec_uuid missing")
+    #     if self.servers is None or not self.servers:
+    #         self.servers = [
+    #             ServerObject(
+    #                 url="/",
+    #                 description=None,
+    #                 variables=None,
+    #                 # _oas_uuid=self.openapi_spec_uuid,
+    #             )
+    #         ]
+
+    #     for server in self.servers:
+    #         SessionHelper.session_add(
+    #             openapi_server.OpenAPIServer(
+    #                 openapi_server_id=server.uuid,
+    #                 spec_id=self.openapi_spec_uuid,
+    #                 url=server.url,
+    #             ),
+    #             db_session,
+    #             is_test,
+    #         )
+
+    #     for pathname, path in self.paths.items():
+    #         path_id: UUID = uuid4()
+    #         model = openapi_path.OpenAPIPath(
+    #             openapi_path_id=path_id,
+    #             spec_id=self.openapi_spec_uuid,
+    #             path_templated=pathname,
+    #         )
+
+    #         SessionHelper.session_add(model, db_session, is_test)
+    #         for http_verb in ["GET", "POST", "PUT", "PATCH", "DELETE"]:
+    #             operation: OperationObject = getattr(path, http_verb.lower())
+    #             if operation is None:
+    #                 continue
+
+    #             servers = operation.servers
+    #             if servers is None:
+    #                 servers = path.servers
+    #             if servers is None:
+    #                 servers = self.servers
+
+    #             operation_prompt = operation.x_cuecode
+    #             if operation_prompt is None:
+    #                 operation_prompt = operation.description
+    #             if operation_prompt is None:
+    #                 operation_prompt = operation.summary
+    #             if operation_prompt is None:
+    #                 operation_prompt = operation.operation_id
+    #             if operation_prompt is None:
+    #                 operation_prompt = f"pathname:{http_verb}"
+
+    #             model = openapi_operation.OpenAPIOperation(
+    #                 openapi_operation_id=uuid4(),
+    #                 oa_server_id=servers[0].uuid,
+    #                 oa_path_id=path_id,
+    #                 http_verb=http_verb.upper(),
+    #                 selection_prompt=operation_prompt,
+    #                 llm_content_gen_tool_call_spec=self._gen_func(
+    #                     servers=self.servers,
+    #                     path=pathname,
+    #                     operation=operation,
+    #                     operation_name=http_verb,
+    #                 ),
+    #             )
+    #             SessionHelper.session_add(model, db_session, is_test)
+
+    #     return self
+
+    @staticmethod
+    def from_formatted_json(
+        spec_id: UUID,
+        base_url: str,
+        data: dict,
+        _is_test=False,
+    ):
+        """create openapi object from json"""
+        return OpenAPIObject(
+            openapi_spec_uuid=spec_id,
+            base_url=base_url,
+            **data,
+        )
+
+
+    
+
+
+
+    # def generate_tools(self) -> dict[int, list]:
+    #     """generate function calls for the api"""
+
+    #     out: defaultdict = defaultdict(list)
+    #     if self.servers is None:
+    #         raise ValueError("servers cannot be None")
+
+    #     server_stack = [self.servers]
+
+    #     for path, path_item in self.paths.items():
+    #         if path_item.servers is not None:
+    #             server_stack.append(path_item.servers)
+    #         if path_item.get is not None:
+    #             result = self._gen_func(server_stack[-1], path, path_item.get, "get")
+    #             for k, v in result.items():
+    #                 out[k].append(v)
+    #         if path_item.post is not None:
+    #             result = self._gen_func(server_stack[-1], path, path_item.post, "post")
+    #             for k, v in result.items():
+    #                 out[k].append(v)
+    #         if path_item.head is not None:
+    #             result = self._gen_func(server_stack[-1], path, path_item.head, "head")
+    #             for k, v in result.items():
+    #                 out[k].append(v)
+    #         if path_item.put is not None:
+    #             result = self._gen_func(server_stack[-1], path, path_item.put, "put")
+    #             for k, v in result.items():
+    #                 out[k].append(v)
+    #         if path_item.patch is not None:
+    #             result = self._gen_func(
+    #                 server_stack[-1], path, path_item.patch, "patch"
+    #             )
+    #             for k, v in result.items():
+    #                 out[k].append(v)
+    #         if path_item.trace is not None:
+    #             result = self._gen_func(
+    #                 server_stack[-1], path, path_item.trace, "trace"
+    #             )
+    #             for k, v in result.items():
+    #                 out[k].append(v)
+    #     return out
+

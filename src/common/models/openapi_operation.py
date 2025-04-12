@@ -44,7 +44,7 @@ class OpenAPIOperation(Base):  # pylint: disable=too-few-public-methods
         UUID(as_uuid=True), ForeignKey("openapi_path.openapi_path_id"), nullable=False
     )
 
-    http_verb: Column = Column(Enum(HttpVerb), nullable=False)
+    http_verb = Column(Enum(HttpVerb), nullable=False)
 
     selection_prompt = Column(Text, nullable=False)
     selection_prompt_embedding = mapped_column(Vector(4096))
