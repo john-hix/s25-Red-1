@@ -130,12 +130,11 @@ def make_selection_prompt_for_operation(
     """Create a prompt used for the selecting the HTTP Operation"""
 
     prompt = (
-        desc
-        + ". This is done by applying the HTTP verb "
+        "Apply the HTTP verb "
         + http_verb
-        + " to the REST API endpoint with path '"
+        + " to the REST API endpoint described by: \n"
+        + " * Path: "
         + path_str
-        + "'."
     )
 
     if operation_object and operation_object.x_cuecode_prompt:
