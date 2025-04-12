@@ -395,9 +395,9 @@ class ParameterObject(BaseModel):
     def validate_style(cls, values) -> dict:
         if "schema" in values:
             if "style" not in values:
-                if values["in"] == "query" or "cookie":
+                if values["in"] == "query" or values["in"] == "cookie":
                     values["style"] = "form"
-                elif values["in"] == "path" or "header":
+                elif values["in"] == "path" or values["in"] == "header":
                     values["style"] = "simple"
         return values
 

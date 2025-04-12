@@ -34,7 +34,7 @@ def openapi_spec_validator_to_cuecode_config(
     for server in validator.servers:
         if not urlparse(server.url):
             pass
-            # raise ValueError("{} is not a fully qualified URL.".format(server.url))
+            raise ValueError("{} is not a fully qualified URL.".format(server.url))
 
         openapi_server = OpenAPIServer(
             openapi_server_id=uuid.uuid5(namespace=db_spec.openapi_spec_id, name=server.url),
@@ -42,13 +42,6 @@ def openapi_spec_validator_to_cuecode_config(
             base_url=server.url,
         )
         session.add(openapi_server)
-
-    # openapi_server = OpenAPIServer(
-    #     openapi_server_id=uuid.uuid4(),
-    #     spec_id=db_spec.openapi_spec_id,
-    #     base_url=db_spec.base_url,
-    # )
-    # session.add(openapi_server)
 
     for path_key in validator.paths:
         # Get Path obj
