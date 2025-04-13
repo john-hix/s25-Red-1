@@ -8,8 +8,6 @@ from sqlalchemy import Column, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, relationship
 
-from common.models.openapi_operation import OpenAPIOperation
-
 from .base import Base
 
 
@@ -23,6 +21,9 @@ class OpenAPIPath(Base):  # pylint: disable=too-few-public-methods
         UUID(as_uuid=True), ForeignKey("openapi_spec.openapi_spec_id"), nullable=False
     )
     path_templated = Column(String, nullable=False)
-    operations: Mapped[List[OpenAPIOperation]] = relationship(back_populates="path")
 
-    spec: Mapped["OpenAPISpec"] = relationship(back_populates="paths")  # type: ignore
+    operations: Mapped[List["OpenAPIOperation"]] = relationship(
+        "OpenAPIOperation", back_populates="path"
+    )
+
+    spec: Mapped["OpenAPISpec"] = relationship("OpenAPISpec", back_populates="paths")  # type: ignore

@@ -910,6 +910,7 @@ class OperationObject(BaseModel):
 
     x_cuecode_prompt: str | None = Field(alias="x-cuecode-prompt", default=None)
     x_cuecode_skip: bool | None = Field(alias="x-cuecode-skip", default=False)
+    x_cuecode_prompts: List[str] | None = Field(alias="x-cuecode-prompts", default=None)
 
 
 class PathItemObject(BaseModel):

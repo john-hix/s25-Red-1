@@ -10,3 +10,4 @@ from .openapi_spec import OpenAPISpec  # isort:skip
 
 from .openapi_path import OpenAPIPath  # isort:skip
 from .openapi_operation import OpenAPIOperation  # isort:skip
+from .openapi_operation_selection import OpenAPIOperationSelectionPrompt  # isort:skip
