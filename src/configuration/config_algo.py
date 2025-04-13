@@ -53,7 +53,8 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
 
     session.add(db_spec)
 
-    # Later, we might want to make the embedding resumable because it takes so long.
+    # Later, we might want to make the embedding resumable if it takes too long
+    # on very large OpenAPI spec files
     create_operation_prompt_embeddings_not_resumable(db_spec, session)
     session.commit()
 
