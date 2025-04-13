@@ -4,11 +4,13 @@ from uuid import UUID
 
 from common.database_engine import DBEngine
 from common.models.openapi_spec import OpenAPISpec
+from configuration.openapi_operation_embedding import (
+    create_operation_prompt_embeddings_not_resumable,
+)
 from configuration.openapi_schema_adapter import OpenAPISchemaAdapter
 from configuration.openapi_schema_validate import validate_openapi_spec
 from configuration.openapi_spec_entity_collection import OpenAPISpecEntityCollection
 from configuration.openapi_validator_to_cuecode import (
-    create_selection_embeddings,
     openapi_spec_validator_to_cuecode_config,
 )
 
@@ -51,7 +53,9 @@ def config_algo_openapi(db_engine: DBEngine, openapi_spec_id: str):
 
     session.add(db_spec)
 
-    create_selection_embeddings(db_spec, session)
+    # Later, we might want to make the embedding resumable if it takes too long
+    # on very large OpenAPI spec files
+    create_operation_prompt_embeddings_not_resumable(db_spec, session)
     session.commit()
 
     # NOTE The comments below describe the config algo from the Activity Diagram

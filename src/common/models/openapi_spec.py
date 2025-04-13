@@ -27,4 +27,6 @@ class OpenAPISpec(Base):  # pylint: disable=too-few-public-methods
     file_name = Column(String)
     base_url = Column(String)
 
-    paths: Mapped[List[OpenAPIPath]] = relationship(back_populates="spec")
+    paths: Mapped[List[OpenAPIPath]] = relationship(
+        "OpenAPIPath", back_populates="spec"
+    )

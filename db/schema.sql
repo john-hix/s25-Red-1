@@ -154,9 +154,19 @@ CREATE TABLE public.openapi_operation (
     openapi_server_id uuid NOT NULL,
     openapi_path_id uuid NOT NULL,
     http_verb public.http_verb NOT NULL,
-    selection_prompt text,
-    selection_prompt_embedding public.vector(4096),
     llm_content_gen_tool_call_spec jsonb
+);
+
+
+--
+-- Name: openapi_operation_selection_prompt; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.openapi_operation_selection_prompt (
+    openapi_operation_selection_prompt_id uuid NOT NULL,
+    openapi_operation_id uuid NOT NULL,
+    selection_prompt text,
+    selection_prompt_embedding public.vector(384)
 );
 
 
@@ -345,6 +355,14 @@ ALTER TABLE ONLY public.openapi_entity_to_operation
 
 ALTER TABLE ONLY public.openapi_operation
     ADD CONSTRAINT openapi_operation_pkey PRIMARY KEY (openapi_operation_id);
+
+
+--
+-- Name: openapi_operation_selection_prompt openapi_operation_selection_prompt_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.openapi_operation_selection_prompt
+    ADD CONSTRAINT openapi_operation_selection_prompt_pkey PRIMARY KEY (openapi_operation_selection_prompt_id);
 
 
 --
@@ -663,6 +681,14 @@ ALTER TABLE ONLY public.openapi_operation
 
 
 --
+-- Name: openapi_operation_selection_prompt openapi_operation_selection_prompt_openapi_operation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.openapi_operation_selection_prompt
+    ADD CONSTRAINT openapi_operation_selection_prompt_openapi_operation_id_fkey FOREIGN KEY (openapi_operation_id) REFERENCES public.openapi_operation(openapi_operation_id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
 -- Name: openapi_path openapi_path_openapi_spec_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -744,4 +770,5 @@ ALTER TABLE ONLY public.service_credential
 --
 
 INSERT INTO public.schema_migrations (version) VALUES
-    ('20250320014906');
+    ('20250320014906'),
+    ('20250411023536');

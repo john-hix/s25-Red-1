@@ -4,12 +4,14 @@ import uuid
 
 from sqlalchemy.orm import scoped_session
 
-from common.llm_client import embedding
 from common.models.openapi_operation import OpenAPIOperation
 from common.models.openapi_path import OpenAPIPath
 from common.models.openapi_server import OpenAPIServer
 from common.models.openapi_spec import OpenAPISpec
 from configuration.openapi import OpenAPIObject, OperationObject
+from configuration.openapi_operation_embedding import (
+    create_operation_prompts_without_embeddings,
+)
 from configuration.openapi_spec_entity_collection import OpenAPISpecEntityCollection
 from configuration.openapi_tool_call import make_tool_call_spec
 
@@ -57,20 +59,19 @@ def openapi_spec_validator_to_cuecode_config(
             op_obj: OperationObject = op["op_obj"]
             if not op_obj:
                 continue
-            op_prompt: str = make_selection_prompt_for_operation(
-                path_key, op_obj, op["verb"]
-            )
+
             # pylint: disable-next=unused-variable
-            op_prompt_vector = None
             db_op = OpenAPIOperation(
                 openapi_path_id=path.openapi_path_id,
-                path=path,
+                # path=path,
                 openapi_server_id=openapi_server.openapi_server_id,
                 http_verb=op["verb"],
-                selection_prompt=op_prompt,
                 llm_content_gen_tool_call_spec=make_tool_call_spec(
                     path, op_obj, op["verb"]
                 ),
+            )
+            create_operation_prompts_without_embeddings(
+                db_op, op["verb"], path, path_key, op_obj, session
             )
             path.operations.append(db_op)
 
@@ -79,43 +80,6 @@ def openapi_spec_validator_to_cuecode_config(
     return OpenAPISpecEntityCollection()
 
 
-def create_selection_embeddings(db_spec: OpenAPISpec, session: scoped_session):
-    """Begin the long process of embedding each OpenAPI operation's selection prompt"""
-    for path in db_spec.paths:
-        for op in path.operations:
-            # When LiteLLM outage is over, use/modify this:
-            # res = llm_client.embeddings.create(
-            #     input=op.selection_prompt, model=LLM_MODEL
-            # )
-            vec = embedding(op.selection_prompt)
-            op.selection_prompt_embedding = vec
-            session.add(op)
-
-
 def make_templated_path(path: str) -> str:
     """Standardize the path string stored"""
     return path
-
-
-def make_selection_prompt_for_operation(
-    path_str: str,  # pylint: disable=unused-argument
-    operation_object: OperationObject,
-    http_verb: str,  # pylint: disable=unused-argument
-) -> str:
-    """Create a prompt used for the selecting the HTTP Operation"""
-    desc = ""
-    if operation_object:
-        if operation_object.x_cuecode_prompt:
-            desc = operation_object.x_cuecode_prompt
-        else:
-            desc = operation_object.description
-
-    prompt = (
-        desc
-        + ". This is done by applying the HTTP verb "
-        + http_verb
-        + " to the REST API endpoint with path '"
-        + path_str
-        + "'."
-    )
-    return prompt

@@ -1,15 +1,22 @@
 """Module to general API payloads"""
 
+import logging
+
 import psycopg2
+from numpy import ndarray
+from sentence_transformers import SentenceTransformer
 
-from common.llm_client import embedding
 
-
-def simple_endpoint_search(configuration_id: str, natural_language_text: str):
+def simple_endpoint_search(configuration_id: str, sentence: str):
     """Example of the similarity search"""
 
-    ollama_response = embedding(natural_language_text)
+    model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
+    logging.debug("simple_endpoint_search starting embedding for text")
+    sentence_list = [sentence]
+    embeddings: ndarray = model.encode(sentence_list)
+    sentence_embedding = embeddings[0]
 
+    # Use config instead
     conn = psycopg2.connect(
         database="postgres",
         host="localhost",
@@ -22,15 +29,19 @@ def simple_endpoint_search(configuration_id: str, natural_language_text: str):
 
     cosine_simililarity_search_sql = (
         "SELECT 1 - (selection_prompt_embedding <=> %s) AS cosine_similarity, "
-        + " openapi_operation_id, "
+        + " o.openapi_operation_id, "
         + "o.openapi_server_id, openapi_path_id, http_verb, selection_prompt, "
         + "llm_content_gen_tool_call_spec "
-        + "FROM openapi_operation as o "
+        + "FROM openapi_operation_selection_prompt sp "
+        + "INNER JOIN openapi_operation as o "
+        + "ON sp.openapi_operation_id = o.openapi_operation_id "
         + "INNER JOIN openapi_server as s on s.openapi_server_id = o.openapi_server_id "
         + "WHERE s.spec_id = %s "
         + "ORDER BY 1 - (selection_prompt_embedding <=> %s) desc LIMIT 10;"
     )
-    input_vec_string = str(ollama_response)
+    input_vec_string = str(sentence_embedding.tolist()).replace(
+        "ARRAY", ""
+    )  # Update this.
     cosine_simililarity_search_variables = (
         input_vec_string,
         configuration_id,
