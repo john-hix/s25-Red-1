@@ -4,7 +4,7 @@
             "type": "function",
             "function": {
                 "name": "/pet+POST",
-                "description": "Apply the HTTP verb POST to the REST API endpoint described by:   * Path: /pet  * Summary: Add a new pet to the store  * Description: Add a new pet to the store",
+                "description": "Apply the HTTP verb POST to the REST API endpoint described by: \n * Path: /pet\n * Summary: Add a new pet to the store\n * Description: Add a new pet to the store",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -288,7 +288,7 @@
             "type": "function",
             "function": {
                 "name": "/pet+PUT",
-                "description": "Apply the HTTP verb PUT to the REST API endpoint described by:   * Path: /pet  * Summary: Update an existing pet  * Description: Update an existing pet by Id",
+                "description": "Apply the HTTP verb PUT to the REST API endpoint described by: \n * Path: /pet\n * Summary: Update an existing pet\n * Description: Update an existing pet by Id",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -576,7 +576,7 @@
             "type": "function",
             "function": {
                 "name": "/pet/{petId}+POST",
-                "description": "Apply the HTTP verb POST to the REST API endpoint described by:   * Path: /pet/{petId}  * Summary: Updates a pet in the store with form data",
+                "description": "Apply the HTTP verb POST to the REST API endpoint described by: \n * Path: /pet/{petId}\n * Summary: Updates a pet in the store with form data",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -604,7 +604,7 @@
             "type": "function",
             "function": {
                 "name": "/pet/{petId}+DELETE",
-                "description": "Apply the HTTP verb DELETE to the REST API endpoint described by:   * Path: /pet/{petId}  * Summary: Deletes a pet",
+                "description": "Apply the HTTP verb DELETE to the REST API endpoint described by: \n * Path: /pet/{petId}\n * Summary: Deletes a pet",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -630,7 +630,7 @@
             "type": "function",
             "function": {
                 "name": "/pet/{petId}/uploadImage+POST",
-                "description": "Apply the HTTP verb POST to the REST API endpoint described by:   * Path: /pet/{petId}/uploadImage  * Summary: uploads an image",
+                "description": "Apply the HTTP verb POST to the REST API endpoint described by: \n * Path: /pet/{petId}/uploadImage\n * Summary: uploads an image",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -663,7 +663,7 @@
             "type": "function",
             "function": {
                 "name": "/store/order+POST",
-                "description": "Apply the HTTP verb POST to the REST API endpoint described by:   * Path: /store/order  * Summary: Place an order for a pet  * Description: Place a new order in the store",
+                "description": "Apply the HTTP verb POST to the REST API endpoint described by: \n * Path: /store/order\n * Summary: Place an order for a pet\n * Description: Place a new order in the store",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -827,7 +827,7 @@
             "type": "function",
             "function": {
                 "name": "/store/order/{orderId}+DELETE",
-                "description": "Apply the HTTP verb DELETE to the REST API endpoint described by:   * Path: /store/order/{orderId}  * Summary: Delete purchase order by ID  * Description: For valid response try integer IDs with value < 1000. Anything above 1000 or nonintegers will generate API errors",
+                "description": "Apply the HTTP verb DELETE to the REST API endpoint described by: \n * Path: /store/order/{orderId}\n * Summary: Delete purchase order by ID\n * Description: For valid response try integer IDs with value < 1000. Anything above 1000 or nonintegers will generate API errors",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -849,7 +849,7 @@
             "type": "function",
             "function": {
                 "name": "/user+POST",
-                "description": "Apply the HTTP verb POST to the REST API endpoint described by:   * Path: /user  * Summary: Create user  * Description: This can only be done by the logged in user.",
+                "description": "Apply the HTTP verb POST to the REST API endpoint described by: \n * Path: /user\n * Summary: Create user\n * Description: This can only be done by the logged in user.",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -1046,7 +1046,7 @@
             "type": "function",
             "function": {
                 "name": "/user/createWithList+POST",
-                "description": "Apply the HTTP verb POST to the REST API endpoint described by:   * Path: /user/createWithList  * Summary: Creates list of users with given input array  * Description: Creates list of users with given input array",
+                "description": "Apply the HTTP verb POST to the REST API endpoint described by: \n * Path: /user/createWithList\n * Summary: Creates list of users with given input array\n * Description: Creates list of users with given input array",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -1130,7 +1130,7 @@
             "type": "function",
             "function": {
                 "name": "/user/{username}+PUT",
-                "description": "Apply the HTTP verb PUT to the REST API endpoint described by:   * Path: /user/{username}  * Summary: Update user  * Description: This can only be done by the logged in user.",
+                "description": "Apply the HTTP verb PUT to the REST API endpoint described by: \n * Path: /user/{username}\n * Summary: Update user\n * Description: This can only be done by the logged in user.",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -1331,7 +1331,7 @@
             "type": "function",
             "function": {
                 "name": "/user/{username}+DELETE",
-                "description": "Apply the HTTP verb DELETE to the REST API endpoint described by:   * Path: /user/{username}  * Summary: Delete user  * Description: This can only be done by the logged in user.",
+                "description": "Apply the HTTP verb DELETE to the REST API endpoint described by: \n * Path: /user/{username}\n * Summary: Delete user\n * Description: This can only be done by the logged in user.",
                 "parameters": {
                     "type": "object",
                     "properties": {

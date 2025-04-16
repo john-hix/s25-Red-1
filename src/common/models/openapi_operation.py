@@ -5,10 +5,9 @@ import enum
 import uuid
 from typing import List
 
-from pgvector.sqlalchemy import Vector
-from sqlalchemy import JSON, Column, Enum, ForeignKey, Text
+from sqlalchemy import JSON, Column, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, relationship
 
 from .base import Base
 
@@ -46,9 +45,18 @@ class OpenAPIOperation(Base):  # pylint: disable=too-few-public-methods
 
     http_verb = Column(Enum(HttpVerb), nullable=False)
 
-    selection_prompt = Column(Text, nullable=False)
-    selection_prompt_embedding = mapped_column(Vector(4096))
     llm_content_gen_tool_call_spec = Column(JSON)
-    # TODO: add embedding pylint: disable=fixme
 
-    path: Mapped["OpenAPIPath"] = relationship(back_populates="operations")
+    # path: Mapped["OpenAPIPath"] = relationship("OpenAPIPath", back_populates="operations", foreign_keys="[OpenAPIOperation.openapi_path_id]")  # type: ignore
+    selection_prompts: Mapped[List["OpenAPIOperationSelectionPrompt"]] = relationship(  # type: ignore
+        "OpenAPIOperationSelectionPrompt",
+        back_populates="openapi_operation",
+    )
+
+    server: Mapped["OpenAPIServer"] = relationship(
+        "OpenAPIServer", back_populates="operations"
+    )
+
+    path: Mapped["OpenAPIPath"] = relationship(
+        "OpenAPIPath", back_populates="operations"
+    )
