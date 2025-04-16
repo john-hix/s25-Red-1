@@ -19,7 +19,10 @@ from configuration.openapi_tool_call import make_tool_call_spec
 
 
 class CueCodeOpenAPIConstraintError(ValueError):
-    pass
+    """
+    Exception to raise when the OpenAPI spec does not meet CueCode's constraints
+    on OpenAPI spec contents or structure.
+    """
 
 
 def build_and_add_server_from_spec(
