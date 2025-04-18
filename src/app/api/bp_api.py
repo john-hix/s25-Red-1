@@ -1,11 +1,20 @@
 """Flask Blueprint for the Web API that runs the CueCode runtime algorithm"""
 
 from functools import wraps
+from typing import TypeVar, cast
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, jsonify, request
 
-from common.models.cuecode_config import CuecodeConfig
-from runtime.generate_api_payloads import simple_endpoint_search
+from runtime.generate_api_payloads import CueCodePayloadGenerator
+
+T = TypeVar("T", bound="RuntimeApiBlueprint")
+
+
+class RuntimeApiBlueprint(Blueprint):
+    """Class for type annotating our runtime API Blueprint's properties"""
+
+    cuecode_runtime: CueCodePayloadGenerator
+
 
 API_KEY = "TEST_API_KEY"
 
@@ -23,10 +32,16 @@ def authenticate(f):
     return decorated_function
 
 
-def create_blueprint():
+def _create_typed_blueprint(db) -> RuntimeApiBlueprint:
+    api_bp = Blueprint("api/v0", __name__)
+    api_bp.cuecode_runtime = CueCodePayloadGenerator(db=db)  # type: ignore
+    return cast(RuntimeApiBlueprint, api_bp)
+
+
+def create_blueprint(db):
     """Flask Blueprint for the Web API that runs the CueCode runtime algorithm"""
 
-    api_bp = Blueprint("api/v0", __name__)
+    api_bp = _create_typed_blueprint(db)
 
     @api_bp.errorhandler(404)
     def not_found():
@@ -48,7 +63,9 @@ def create_blueprint():
         """Get the endpoints that the runtime algorithm selects
         for a given natural language text. Results are nondeterministic."""
         data = request.get_json()
-        endpoints = simple_endpoint_search(cuecode_config_id, data["text"])
+        endpoints = api_bp.cuecode_runtime.operation_tool_call_search(
+            cuecode_config_id, data["text"]
+        )
         result = {"endpoints": endpoints}
         return jsonify(result)
 

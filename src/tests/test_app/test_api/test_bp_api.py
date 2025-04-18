@@ -20,7 +20,7 @@ def app():
     """Build a flask app that does nothing but run our Blueprint"""
 
     flask_app = Flask(__name__)
-    flask_app.register_blueprint(create_blueprint())
+    flask_app.register_blueprint(create_blueprint(db=None))
     flask_app.config.update(
         {
             "TESTING": True,
