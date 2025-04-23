@@ -51,7 +51,8 @@ The team produced a template which we each individually used to write a one-page
 <iframe src="pdf/freddie-lab1.pdf" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
 </html>
 
-##Project Poster
+## Project Poster
+
 <html markdown>
 <iframe src="pdf/team-poster.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
 </html>
