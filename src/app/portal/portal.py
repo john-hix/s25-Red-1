@@ -103,7 +103,9 @@ class Portal:
         @self.app.route('/account/reset', methods=['POST'])
         @login_required
         def reset_password():
-            """password reset functionality"""
+            """password reset functionality
+                TODO: make password reset work
+            """
             flash('Successfully reset password', 'info')
             logging.info(f"Successful password reset for '{session.get('username', 'ERROR')}'")
             return redirect(url_for('account'))
@@ -111,6 +113,9 @@ class Portal:
         @self.app.route('/upload', methods=['POST'])
         @login_required
         def upload_openapi():
+            """
+            TODO: flask-wtf: https://flask-wtf.readthedocs.io/en/1.2.x/
+            """
             if 'openapi_spec' not in request.files:
                 flash('Missing file in request', 'danger')
                 return redirect(url_for('account'))
