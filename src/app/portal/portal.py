@@ -25,7 +25,7 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if 'logged_in' not in session:
             flash('Please log in to access this page.', 'warning')
-            return redirect(url_for('login'))
+            return redirect(url_for('login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -67,19 +67,23 @@ class Portal:
 
         @self.app.route('/login', methods=['GET', 'POST'])
         def login():
-            # check if already logged in
+            # Check if already logged in
             if 'logged_in' in session:
-                 return redirect(url_for('account'))
+                return redirect(url_for('account'))
 
             if request.method == 'POST':
-                username = request.form.get('username', 'Guest') #default to guest
+                username = request.form.get('username', 'Guest') # Default to guest
                 session['logged_in'] = True
                 session['username'] = username
                 flash(f'Successful login to {username}', 'success')
                 logging.info(f"Logged in user '{session.get('username', 'ERROR')}'")
-                return redirect(url_for('account'))
-
-            return render_template('login.html')
+                
+                # Redirect user to the initial page they were accessing or default to account page
+                next_page = request.args.get('next', url_for('account'))
+                return redirect(next_page)
+            
+            next_page = request.args.get('next')
+            return render_template('login.html', next=next_page)
 
         @self.app.route('/account')
         @login_required
