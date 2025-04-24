@@ -42,12 +42,11 @@ The changes are listed with the most recent at the top.
 <iframe src="pdf/Lab 2 Version 3 (Draft) - Kobe Franssen.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
 </html>
 
-##Diya Patel
+### Diya Patel
 <html markdown>
 <iframe src="pdf/Lab 1 Version 1- Diya.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
 </html>
 
-### Diya Patel
 <html markdown>
 <iframe src="pdf/Lab_2_Sections_1&2 - Diya.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
 </html>
