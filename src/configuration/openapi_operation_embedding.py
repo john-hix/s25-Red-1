@@ -29,7 +29,9 @@ def create_operation_prompts_without_embeddings(
     them to the DB session without committing."""
 
     prompt_list: List[str] = []
-    prompt_list.append(make_selection_prompt_for_operation(path_str, http_verb))
+    prompt_list.append(
+        make_http_oriented_selection_prompt_for_operation(path_str, http_verb)
+    )
     # Handle the description vs x-cuecode-prompt behavior for old spec files
     prompt_list.extend(get_all_sentences(pick_op_description_field(op)))
 
@@ -110,7 +112,7 @@ def pick_op_description_field(
     return desc
 
 
-def make_selection_prompt_for_operation(
+def make_http_oriented_selection_prompt_for_operation(
     path_str: str,  # pylint: disable=unused-argument
     http_verb: str,  # pylint: disable=unused-argument
 ) -> str:
