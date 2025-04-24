@@ -24,22 +24,20 @@ The changes are listed with the most recent at the top.
 <iframe src="pdf/john-lab-411-lab-v0.pdf" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
 </html>
 
-##Freddie Boateng 
+### Freddie Boateng 
 <html markdown>
 <iframe src="pdf/CS 411 Lab 1 - Freddie Boateng.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
 </html>
 
-##Freddie Boateng 
 <html markdown>
 <iframe src="pdf/CS 411 Lab 2 - Freddie Boateng.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
 </html>
 
-##Kobe Franssen
+### Kobe Franssen
 <html markdown>
 <iframe src="pdf/Lab 1 Version 3 (Draft) - Kobe Franssen.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
 </html>
 
-##Kobe Franssen
 <html markdown>
 <iframe src="pdf/Lab 2 Version 3 (Draft) - Kobe Franssen.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
 </html>
@@ -49,7 +47,7 @@ The changes are listed with the most recent at the top.
 <iframe src="pdf/Lab 1 Version 1- Diya.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
 </html>
 
-##Diya Patel
+### Diya Patel
 <html markdown>
 <iframe src="pdf/Lab_2_Sections_1&2 - Diya.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
 </html>
