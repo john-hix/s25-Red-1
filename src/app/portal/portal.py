@@ -12,9 +12,9 @@ from flask import (
 )
 from functools import wraps
 
-#import uuid
-#from common.models import CuecodeConfig, OpenAPISpec
-#from common.models.base import db
+import uuid
+from common.models import CuecodeConfig, OpenAPISpec
+from common.models.base import db
 
 
 def login_required(f):
@@ -35,17 +35,17 @@ def upload_config(content, filename):
         import time
         time.sleep(5)
         error = "" #TODO: config validation
-        # cuecode_config = CuecodeConfig(config_is_finished=False, is_live=False)
-        # db.session.add(cuecode_config)
-        # db.session.commit()
+        cuecode_config = CuecodeConfig(config_is_finished=False, is_live=False)
+        db.session.add(cuecode_config)
+        db.session.commit()
 
-        # openapi_spec = OpenAPISpec(
-        #     openapi_spec_id=uuid.uuid4(),
-        #     spec_text=content,
-        #     file_name=filename,
-        # )
-        # db.session.add(openapi_spec)
-        # db.session.commit()
+        openapi_spec = OpenAPISpec(
+            openapi_spec_id=uuid.uuid4(),
+            spec_text=content,
+            file_name=filename,
+        )
+        db.session.add(openapi_spec)
+        db.session.commit()
         logging.info(f"Successfully saved spec '{filename}' to database.")
     else:
         error = "Invalid filetype"
