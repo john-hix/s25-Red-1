@@ -402,7 +402,7 @@ class ParameterObject(BaseModel):
         return values
 
     def __init__(self, **values):
-        
+
         super().__init__(**values)
         # if "schema" in values:
         #     if "style" not in values:
@@ -905,6 +905,7 @@ class OperationObject(BaseModel):
 
     x_cuecode_prompt: str | None = Field(alias="x-cuecode-prompt", default=None)
     x_cuecode_skip: bool | None = Field(alias="x-cuecode-skip", default=False)
+    x_cuecode_prompts: List[str] | None = Field(alias="x-cuecode-prompts", default=None)
 
 
 class PathItemObject(BaseModel):
@@ -1308,11 +1309,6 @@ class OpenAPIObject(BaseModel):
             **data,
         )
 
-
-    
-
-
-
     # def generate_tools(self) -> dict[int, list]:
     #     """generate function calls for the api"""
 
@@ -1354,4 +1350,3 @@ class OpenAPIObject(BaseModel):
     #             for k, v in result.items():
     #                 out[k].append(v)
     #     return out
-

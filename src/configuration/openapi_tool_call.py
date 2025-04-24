@@ -1,21 +1,59 @@
 # pylint: skip-file
+from typing import List
+from uuid import UUID, uuid4
+
 from jsonref import JsonRef  # pylint: disable = import-error
 
+from common.models.openapi_operation import OpenAPIOperation
 from common.models.openapi_path import OpenAPIOperation
-from configuration.openapi import OperationObject, PathItemObject, OpenAPIObject, ServerObject
-from typing import List
+from configuration.openapi import (
+    OpenAPIObject,
+    OperationObject,
+    PathItemObject,
+    ServerObject,
+)
 
-from uuid import UUID, uuid4
 
 def set_tool_call_spec(operation: OpenAPIOperation, operationJson: JsonRef):
     pass
+
+
+def make_tool_call_description_for_operation(
+    path_str: str,  # pylint: disable=unused-argument
+    operation_object: OperationObject,
+    http_verb: str,  # pylint: disable=unused-argument
+) -> str:
+    """Create a prompt used for the selecting the HTTP Operation"""
+
+    prompt = (
+        "Apply the HTTP verb "
+        + http_verb
+        + " to the REST API endpoint described by: \n"
+        + " * Path: "
+        + path_str
+    )
+
+    if operation_object and operation_object.x_cuecode_prompt:
+        prompt += "\n" + " * Summary: " + operation_object.x_cuecode_prompt
+        return prompt
+
+    if operation_object.summary:
+        prompt += "\n" + " * Summary: " + operation_object.summary
+    if operation_object.description:
+        prompt += "\n" + " * Description: " + operation_object.description
+    return prompt
+
 
 def make_tool_call_spec(
     path_name: str,
     operation_object: OperationObject,
     http_verb: str,
-    func_prompt: str,
 ) -> dict:
+
+    func_prompt = make_tool_call_description_for_operation(
+        path_name, operation_object, http_verb
+    )
+
     params: dict = {}
     required = []
     if operation_object.parameters is not None:
@@ -60,7 +98,6 @@ def make_tool_call_spec(
         request_body: dict = {"requestBody": {"type": "object", "oneOf": one_of}}
         props.update(**request_body)
     out: dict = {}
-
 
     out = {
         "type": "function",
