@@ -54,7 +54,43 @@ The team produced a template which we each individually used to write a one-page
 ## Project Poster
 
 <html markdown>
-<iframe src="pdf/team-poster.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
+<iframe src="pdf/CS 411W - CueCode POSTER.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
 </html>
 
-[Download the poster here](pdf/CS 411W - CueCode POSTER.pdf)
+## CS 411W Labs
+
+##Freddie Boateng 
+<html markdown>
+<iframe src="pdf/CS 411 Lab 1 - Freddie Boateng.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
+</html>
+
+##Freddie Boateng 
+<html markdown>
+<iframe src="pdf/CS 411 Lab 2 - Freddie Boateng.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
+</html>
+
+##Kobe Franssen
+<html markdown>
+<iframe src="pdf/Lab 1 Version 3 (Draft) - Kobe Franssen.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
+</html>
+
+##Kobe Franssen
+<html markdown>
+<iframe src="pdf/Lab 2 Version 3 (Draft) - Kobe Franssen.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
+</html>
+
+##Diya Patel
+<html markdown>
+<iframe src="pdf/Lab 1 Version 1- Diya.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
+</html>
+
+##Diya Patel
+<html markdown>
+<iframe src="pdf/Lab_2_Sections_1&2 - Diya.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
+</html>
+
+
+
+
+
+
