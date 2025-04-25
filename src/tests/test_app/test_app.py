@@ -51,7 +51,7 @@ def test_health_check_endpoint(client):
 def test_portal_index_existence(client):
     """Test that the blueprint is registered and serving the index route"""
     response = client.get("/portal/")
-    assert_that(response.status_code, equal_to(200))
+    assert_that(response.status_code, equal_to(302))
     assert_that(str(response.data), contains_string(("<html")))
 
 
@@ -69,9 +69,9 @@ def test_app_index_redirect_to_portal_index(client):
 
     response_followed = client.get("/", follow_redirects=True)
     # Check that there was one redirect response.
-    assert_that(len(response_followed.history), equal_to(2))
+    assert_that(len(response_followed.history), equal_to(3))
     # Check that the second request was to the index page.
-    assert_that(response_followed.request.path, equal_to("/portal/"))
+    assert_that(response_followed.request.path, equal_to("/portal/login"))
 
 
 def test_api_index(client):

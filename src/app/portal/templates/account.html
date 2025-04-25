@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Account{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Welcome to your Account, {{ username }}!</h1>
+    <hr>
+
+    {# --- Reset Password Section --- #}
+    <h2>Password Management</h2>
+    <form method="POST" action="{{ url_for('portal.reset_password') }}" style="display: inline-block;">
+        <button type="submit" class="btn btn-warning">Reset Password</button>
+    </form>
+    <hr>
+
+    {# --- OpenAPI Upload Section --- #}
+    <h2>Upload OpenAPI Specification</h2>
+    <a href="{{ url_for('portal.upload_spec') }}" class="btn btn-primary">
+        Upload OpenAPI spec
+    </a>
+
+</div>
+
+{% endblock %}

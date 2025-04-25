@@ -3,14 +3,20 @@
 import os
 
 from common.database_engine import DBEngine
-from common.models import CuecodeConfig, OpenAPISpec
+from common.models import Account, CuecodeConfig, OpenAPISpec
 
 engine: DBEngine = DBEngine()
 session = engine.get_session()
 
 PET_CONFIG_ID = "ca7c4e5d-4f5d-47b6-a06e-e786b8e45b55"
 PET_SPEC_ID = "ca754e5d-4f5d-47b6-a06e-e786b8e45b55"
+ACCOUNT_ID = "ca754e5d-4f5d-47b6-a06e-e786b8e45b53"
+
 pet_cuecode_config = CuecodeConfig(cuecode_config_id=PET_CONFIG_ID)
+
+USER = Account(account_id=ACCOUNT_ID, email="Guest", password="Guest")
+
+session.add(USER)
 
 session.add(pet_cuecode_config)
 

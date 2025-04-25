@@ -43,7 +43,7 @@ def runner(app):
 def test_index(client):
     """Test that the blueprint is registered and serving the index route"""
     response = client.get("/")
-    assert_that(response.status_code, equal_to(200))
+    assert_that(response.status_code, equal_to(302))
     assert_that(str(response.data), contains_string(("<html")))
 
 
