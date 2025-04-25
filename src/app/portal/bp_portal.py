@@ -5,7 +5,6 @@ import uuid
 from functools import wraps
 
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for
-from flask_login import LoginManager
 from flask_wtf import FlaskForm
 from werkzeug.utils import secure_filename
 from wtforms import FileField, PasswordField, StringField, SubmitField
