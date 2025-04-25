@@ -24,6 +24,14 @@ The changes are listed with the most recent at the top.
 <iframe src="pdf/john-lab-411-lab-v0.pdf" frameborder="0" width="960" height="569" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
 </html>
 
+<html markdown>
+<iframe src="pdf/CS 411W Hicks John Lab 1.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
+</html>
+
+<html markdown>
+<iframe src="pdf/CS 411W Hicks John Lab 2.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
+</html>
+
 ### Freddie Boateng 
 <html markdown>
 <iframe src="pdf/CS 411 Lab 1 - Freddie Boateng.pdf" frameborder="0" width="960" height="569" allowfullscreen="true"></iframe>
