@@ -93,7 +93,7 @@ Ubuntu: `sudo apt update && sudo apt install make -y`
 ## Running application
 
 ### First start
-- get all dependencies running with `make run`, `make docker-up` and `make run-worker`
+- get all dependencies running with `make run`, `make docker-run` and `make run-worker`
 - set the schema into database with `make dbmate-up`
 - (optional) populate the database with dummy values with `make db-seed`
 
