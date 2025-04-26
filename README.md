@@ -93,7 +93,7 @@ Ubuntu: `sudo apt update && sudo apt install make -y`
 ## Running application
 
 CueCode's server assumes two processes will run, the web application and a worker.
-Run these in the development environment by issuing `make run` and
+Run these in the development environment by issuing `make run`, `make docker-up` and
 `make run-worker`, respectively.
 
 # Docker for service dependencies
