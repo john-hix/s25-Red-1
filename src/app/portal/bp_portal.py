@@ -127,7 +127,7 @@ def create_blueprint():
             else:
                 session["logged_in"] = True
                 session["username"] = username
-                session["user"] = user
+#                session["user"] = user
                 flash(f"Successful login to {username}", "success")
                 logging.info("Logged in user %s", session.get("username", "ERROR"))
 
