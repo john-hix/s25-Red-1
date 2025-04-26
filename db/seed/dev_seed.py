@@ -14,7 +14,7 @@ ACCOUNT_ID = "ca754e5d-4f5d-47b6-a06e-e786b8e45b53"
 
 pet_cuecode_config = CuecodeConfig(cuecode_config_id=PET_CONFIG_ID)
 
-USER = Account(account_id=ACCOUNT_ID, email="Guest", password="Guest")
+USER = Account(cuecode_account_id=ACCOUNT_ID, email="Guest", password="Guest")
 
 session.add(USER)
 
