@@ -33,8 +33,9 @@ Team Red - Spring 2025
 
 Required software:
 
-- Python 3.13 (used as `python3.13`)
+- Python 3.12 (used as `python3.12`)
   - Should be available via OS package manager
+  - (linux) https://ubuntuhandbook.org/index.php/2023/05/install-python-3-12-ubuntu/
 - Make
   - Should be available via OS package manager
 - Common UNIX utilities: `rm`, `find`, `test`, etc. used in Makefile.
@@ -91,9 +92,16 @@ Ubuntu: `sudo apt update && sudo apt install make -y`
 
 ## Running application
 
+### First start
+- get all dependencies running with `make run`, `make docker-run` and `make run-worker`
+- set the schema into database with `make dbmate-up`
+- (optional) populate the database with dummy values with `make db-seed`
+
+
+### Normal start
 CueCode's server assumes two processes will run, the web application and a worker.
-Run these in the development environment by issuing `make run` and
-`make worker-run`, respectively.
+Run these in the development environment by issuing `make run`, `make docker-up` and
+`make run-worker`, respectively.
 
 # Docker for service dependencies
 
