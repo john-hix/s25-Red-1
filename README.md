@@ -92,6 +92,13 @@ Ubuntu: `sudo apt update && sudo apt install make -y`
 
 ## Running application
 
+### First start
+- get all dependencies running with `make run`, `make docker-up` and `make run-worker`
+- set the schema into database with `make dbmate-up`
+- (optional) populate the database with dummy values with `make db-seed`
+
+
+### Normal start
 CueCode's server assumes two processes will run, the web application and a worker.
 Run these in the development environment by issuing `make run`, `make docker-up` and
 `make run-worker`, respectively.
