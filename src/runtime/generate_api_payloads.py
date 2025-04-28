@@ -136,6 +136,8 @@ class CueCodePayloadGenerator:
         #     will then take over.
         #   2. for each tool call received, prompt again with structured output
         #    constraints.
+
+        # Get ready for prompt 1:
         system_prompt = (
             "You are a helpful assistant. "
             + "You are to create HTTP Web API requests that effect the action described "
@@ -144,13 +146,7 @@ class CueCodePayloadGenerator:
             " You may not generate the HTTP requests directly; instead, use the tool calls"
             " to accomplish your instructions."
         )
-
-        # print(LLM_BASE_URL)
-        # print(LLM_API_KEY)
-        # print(LLM_MODEL)
-
-        # This code happens to use OpenAI and LangChain.
-        # TODO: Refactor to just LangChain in this method body.
+        # Send prompt 1:
         completion = self._llm_client.chat.completions.create(
             model=LLM_MODEL,
             messages=[
@@ -163,6 +159,8 @@ class CueCodePayloadGenerator:
         # print(completion)
         # print(completion.choices[0].message.tool_calls)
 
+        # List of tool call requests, for each of which we will soon issue
+        # prompt #2:
         tool_call_requests = completion.choices[0].message.tool_calls
 
         if not tool_call_requests:
@@ -170,6 +168,8 @@ class CueCodePayloadGenerator:
                 "LLM could not identify endpoints for input via tool call prompts."
             )
 
+        # Get ready for prompt 2 calls. Use LangChain for constraining output to the JSON schema
+        # each endpoint requires
         llm = init_chat_model(
             LLM_MODEL,
             model_provider="openai",
@@ -188,10 +188,6 @@ class CueCodePayloadGenerator:
             )
             assert this_tool_call_spec is not None
             # Modifications to meet LangChain JSON Schema requirements
-            # this_json_schema_for_output: dict = this_tool_call_spec["function"]  # type: ignore
-            # this_json_schema_for_output["title"] = this_tool_call_spec["function"][
-            #     "name"
-            # ]
             this_json_schema_for_output: OpenApiPayloadSchema = (
                 tool_call_spec_to_payload_json_schema(this_tool_call_spec)
             )
