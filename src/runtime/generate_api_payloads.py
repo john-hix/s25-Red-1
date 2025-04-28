@@ -41,7 +41,6 @@ class CueCodePayloadGenerator:
         embeddings: ndarray = model.encode(sentence_list)
         sentence_embedding = embeddings[0]
 
-        # Use config instead
         conn = self._db.session.connection().connection
         cursor = conn.cursor()
 
