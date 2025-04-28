@@ -8,6 +8,9 @@ from flask_sqlalchemy import SQLAlchemy
 from langchain.chat_models import init_chat_model
 from numpy import ndarray
 from openai import OpenAI
+from openai.types.chat.chat_completion_message_tool_call import (
+    ChatCompletionMessageToolCall,
+)
 from openai.types.chat.chat_completion_tool_param import ChatCompletionToolParam
 from sentence_transformers import SentenceTransformer
 from werkzeug.exceptions import NotFound
@@ -137,6 +140,40 @@ class CueCodePayloadGenerator:
         #   2. for each tool call received, prompt again with structured output
         #    constraints.
 
+        # Perform prompt 1:
+        tool_call_requests = self._generate_tool_call_requests(text_input, tools)
+
+        if not tool_call_requests:
+            raise NotFound(
+                "LLM could not identify endpoints for input via tool call prompts."
+            )
+
+        # Get ready for prompt 2 calls. Use LangChain for constraining output to the JSON schema
+        # each endpoint requires
+        llm = init_chat_model(
+            LLM_MODEL,
+            model_provider="openai",
+            base_url=LLM_BASE_URL,
+            api_key=LLM_API_KEY,
+        )
+
+        payloads: List[dict] = []
+        for tool_call_request in tool_call_requests:
+            payloads.append(
+                self._generate_structured_payload(
+                    tool_call_request, text_input, tools, llm
+                )
+            )
+
+        return payloads
+
+    def _generate_tool_call_requests(
+        self, text_input: str, tools: List[ChatCompletionToolParam]
+    ):
+        """
+        Given a list of endpoints from the similarity search, have the LLM pick
+        which endpoints to hit.
+        """
         # Get ready for prompt 1:
         system_prompt = (
             "You are a helpful assistant. "
@@ -159,62 +196,44 @@ class CueCodePayloadGenerator:
         # print(completion)
         # print(completion.choices[0].message.tool_calls)
 
-        # List of tool call requests, for each of which we will soon issue
-        # prompt #2:
-        tool_call_requests = completion.choices[0].message.tool_calls
+        # List of tool call requests
+        return completion.choices[0].message.tool_calls
 
-        if not tool_call_requests:
-            raise NotFound(
-                "LLM could not identify endpoints for input via tool call prompts."
-            )
-
-        # Get ready for prompt 2 calls. Use LangChain for constraining output to the JSON schema
-        # each endpoint requires
-        llm = init_chat_model(
-            LLM_MODEL,
-            model_provider="openai",
-            base_url=LLM_BASE_URL,
-            api_key=LLM_API_KEY,
+    def _generate_structured_payload(
+        self, tool_call_request: ChatCompletionMessageToolCall, text_input, tools, llm
+    ) -> OpenApiPayloadSchema:
+        # Each OpenAPI operation prompt should have only its matching
+        # tool call available.
+        this_tool_call_spec = next(
+            t for t in tools if t["function"]["name"] == tool_call_request.function.name
+        )
+        assert this_tool_call_spec is not None
+        # Modifications to meet LangChain JSON Schema requirements
+        this_json_schema_for_output: OpenApiPayloadSchema = (
+            tool_call_spec_to_payload_json_schema(this_tool_call_spec)
+        )
+        # print("this_json_schema_for_output")
+        # print(this_json_schema_for_output)
+        this_operation_gen_model = llm.bind_tools(
+            [this_json_schema_for_output], tool_choice="any"
         )
 
-        payloads: List[dict] = []
-        for tool_call_request in tool_call_requests:
-            # Each OpenAPI operation prompt should have only its matching
-            # tool call available.
-            this_tool_call_spec = next(
-                t
-                for t in tools
-                if t["function"]["name"] == tool_call_request.function.name
-            )
-            assert this_tool_call_spec is not None
-            # Modifications to meet LangChain JSON Schema requirements
-            this_json_schema_for_output: OpenApiPayloadSchema = (
-                tool_call_spec_to_payload_json_schema(this_tool_call_spec)
-            )
-            # print("this_json_schema_for_output")
-            # print(this_json_schema_for_output)
-            this_operation_gen_model = llm.bind_tools(
-                [this_json_schema_for_output], tool_choice="any"
-            )
+        # Generate response according to strict JSON Schema defined for
+        # this Operation
+        structured_llm = this_operation_gen_model.with_structured_output(
+            this_json_schema_for_output
+        )
+        structured_prompt = (
+            "You are to create HTTP Web API requests that effect the action described "
+            + " by the user's input. Find the action described in the text "
+            + " that most closely matches the HTTP endpoint schema provided,"
+            + " then generate an API request that conforms to the JSON schema."
+            + " The user input is as follows:\n\n"
+            + text_input
+        )
+        response = structured_llm.invoke(structured_prompt)
 
-            # Generate response according to strict JSON Schema defined for
-            # this Operation
-            structured_llm = this_operation_gen_model.with_structured_output(
-                this_json_schema_for_output
-            )
-            structured_prompt = (
-                "You are to create HTTP Web API requests that effect the action described "
-                + " by the user's input. Find the action described in the text "
-                + " that most closely matches the HTTP endpoint schema provided,"
-                + " then generate an API request that conforms to the JSON schema."
-                + " The user input is as follows:\n\n"
-                + text_input
-            )
-            response = structured_llm.invoke(structured_prompt)
-
-            # print(type(response))
-            # print(response)
-            # print(json.dumps(response, indent=2))
-            payloads.append(response)
-
-        return payloads
+        # print(type(response))
+        # print(response)
+        # print(json.dumps(response, indent=2))
+        return response
