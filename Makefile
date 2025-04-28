@@ -3,7 +3,7 @@
 venv: .venv/touchfile
 
 .venv/touchfile: requirements.txt
-	test -d .venv || python3.12 -m venv .venv # TODO: analyze key project dependencies and set Python minor version accordingly.
+	test -d .venv || python3.12 -m venv .venv
 	. .venv/bin/activate; pip install -Ur requirements.txt
 	. .venv/bin/activate; pip install -e .
 	touch .venv/touchfile
@@ -89,6 +89,9 @@ dbmate-dump:
 
 db-seed:
 	. .venv/bin/activate; python db/seed/dev_seed.py
+
+db-trunc:
+	. .venv/bin/activate; python db/seed/dev_truncate.py
 
 clean:
 	rm -rf .venv
