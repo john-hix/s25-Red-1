@@ -3,7 +3,6 @@
 import logging
 from typing import List
 
-import spacy
 from sentence_transformers import SentenceTransformer
 from sqlalchemy import select
 from sqlalchemy.orm import scoped_session
@@ -12,6 +11,7 @@ from common.models.openapi_operation import OpenAPIOperation
 from common.models.openapi_operation_selection import OpenAPIOperationSelectionPrompt
 from common.models.openapi_path import OpenAPIPath
 from common.models.openapi_spec import OpenAPISpec
+from common.spacy_util import get_all_sentences
 
 from .openapi import OperationObject, PathItemObject
 
@@ -125,11 +125,3 @@ def make_http_oriented_selection_prompt_for_operation(
         + "'."
     )
     return prompt
-
-
-def get_all_sentences(text) -> List[str]:
-    """Get the sentences in a string"""
-    nlp = spacy.load("en_core_web_sm")
-    doc = nlp(text)
-    assert doc.has_annotation("SENT_START")
-    return [sent.text for sent in doc.sents]

@@ -44,7 +44,7 @@ def create_blueprint(db):
     api_bp = _create_typed_blueprint(db)
 
     @api_bp.errorhandler(404)
-    def not_found():
+    def not_found(context):
         return jsonify({"error": "Not Found"}), 404
 
     @api_bp.route("/")
@@ -68,6 +68,14 @@ def create_blueprint(db):
         )
         result = {"endpoints": endpoints}
         return jsonify(result)
+
+    @api_bp.route("/openapi/<cuecode_config_id>/generate-payloads/", methods=["POST"])
+    def generate_payloads(cuecode_config_id: str):
+        data = request.get_json()
+        payloads = api_bp.cuecode_runtime.generate_operations(
+            cuecode_config_id, data["text"]
+        )
+        return jsonify(payloads)
 
     # Recommended Blueprint 404 handling from Flask Docs
     # (https://flask.palletsprojects.com/en/stable/blueprints/#blueprint-error-handlers)

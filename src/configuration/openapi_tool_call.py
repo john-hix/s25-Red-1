@@ -18,6 +18,10 @@ def set_tool_call_spec(operation: OpenAPIOperation, operationJson: JsonRef):
     pass
 
 
+def format_tool_call_identifier(id: str) -> str:
+    return id.replace("{", "_").replace("}", "_").replace("/", "-")
+
+
 def make_tool_call_description_for_operation(
     path_str: str,  # pylint: disable=unused-argument
     operation_object: OperationObject,
@@ -44,6 +48,77 @@ def make_tool_call_description_for_operation(
     return prompt
 
 
+def _make_parameters_dict(operation_object: OperationObject) -> tuple[dict, List[str]]:
+    params: dict = {}
+    required_parameter_list = []
+    if operation_object.parameters is not None:
+        for param in operation_object.parameters:
+
+            if param.schema_ is None:
+                continue
+
+            tool_call_param_object: dict = {}
+
+            if param.schema_ is not None:
+                tool_call_param_object = param.schema_
+
+            tool_call_param_object["description"] = param.x_cuecode_prompt
+            if tool_call_param_object["description"] is None:
+                tool_call_param_object["description"] = param.description
+
+            if param.examples is not None:
+                tool_call_param_object["examples"] = param.examples
+            if param.in_ is not None:
+                tool_call_param_object["parameter_location"] = param.in_
+
+            param_name_in_tool_call = param.name + "_in_" + param.in_
+            param_name_in_tool_call = format_tool_call_identifier(
+                param_name_in_tool_call
+            )
+            params[param_name_in_tool_call] = tool_call_param_object
+
+            if param.required:
+                required_parameter_list.append(param_name_in_tool_call)
+    return (params, required_parameter_list)
+
+
+def _make_tool_call_request_body(
+    operation_object: OperationObject,
+) -> tuple[dict | None, bool]:
+    request_body_is_required = False
+    if operation_object.request_body and operation_object.request_body.required:
+        request_body_is_required = True
+    request_body = None
+    if operation_object.request_body:
+        request_body = operation_object.request_body.content["application/json"].schema_
+    return (
+        request_body,
+        request_body_is_required,
+    )
+
+
+def remove_none_keys(d) -> dict:
+    """Recursively remove keys with None values from a dictionary."""
+    if not isinstance(d, dict):
+        return d
+
+    cleaned = {}
+    for key, value in d.items():
+        if isinstance(value, dict):
+            nested = remove_none_keys(value)
+            cleaned[key] = nested
+        elif isinstance(value, list):
+            new_list = [
+                remove_none_keys(item) if isinstance(item, dict) else item
+                for item in value
+            ]
+            cleaned[key] = new_list  # type: ignore
+        elif value is not None:
+            cleaned[key] = value
+    # Remove keys with value None
+    return {k: v for k, v in cleaned.items() if v is not None}
+
+
 def make_tool_call_spec(
     path_name: str,
     operation_object: OperationObject,
@@ -54,103 +129,33 @@ def make_tool_call_spec(
         path_name, operation_object, http_verb
     )
 
-    params: dict = {}
-    required = []
-    if operation_object.parameters is not None:
-        for param in operation_object.parameters:
+    params, required_params_list = _make_parameters_dict(operation_object)
+    request_body, request_body_is_required = _make_tool_call_request_body(
+        operation_object
+    )
 
-            if param.schema_ is None:
-                continue
+    tool_call_props: dict = dict()
+    if len(params.keys()) > 0:
+        tool_call_props["parameters"] = params
+    if request_body and len(request_body.keys()) > 0:
+        tool_call_props["requestBody"] = request_body
 
-            param_description = param.x_cuecode_prompt
-            if param_description is None:
-                param_description = param.description
+    required_tool_call_parameter_list = []
+    required_tool_call_parameter_list.extend(required_params_list)
+    if request_body_is_required:
+        required_tool_call_parameter_list.append("requestBody")
 
-            param_info: dict = {}
-            if param.schema_ is not None:
-                param_info = param.schema_
-
-            if param_description is not None:
-                param_info["description"] = param_description
-            if param.examples is not None:
-                param_info["examples"] = param.examples
-
-            param_name = param.in_ + "+" + param.name
-            params[param_name] = param_info
-
-            if param.required:
-                required.append(param_name)
-
-    props: dict = {**params}
-    if operation_object.request_body is not None:
-        if operation_object.request_body.required:
-            required.append("requestBody")
-
-        one_of: dict = {}
-
-        for k, v in operation_object.request_body.content.items():
-            param_info = {}
-            if v.schema_ is not None:
-                param_info = v.schema_
-
-            one_of[k] = param_info
-
-        request_body: dict = {"requestBody": {"type": "object", "oneOf": one_of}}
-        props.update(**request_body)
-    out: dict = {}
-
-    out = {
-        "type": "function",
-        "function": {
-            "name": path_name + "+" + http_verb,
-            "description": func_prompt,
-            "parameters": {
-                "type": "object",
-                "properties": props,
+    return remove_none_keys(
+        {
+            "type": "function",
+            "function": {
+                "name": format_tool_call_identifier(http_verb + "_" + path_name),
+                "description": func_prompt,
+                "parameters": {
+                    "type": "object",
+                    "properties": remove_none_keys(tool_call_props),
+                },
+                "required": required_tool_call_parameter_list,
             },
-            "required": required,
-        },
-    }
-    return out
-
-    # def generate_tools(self) -> dict[int, list]:
-    #     """generate function calls for the api"""
-
-    #     out: List[dict] = []
-
-    #     out2: defaultdict = defaultdict(list)
-
-    #     server_stack = [self.servers]
-
-    #     for path, path_item in self.paths.items():
-    #         if path_item.servers is not None:
-    #             server_stack.append(path_item.servers)
-    #         if path_item.get is not None:
-    #             result = self._gen_func(server_stack[-1], path, path_item.get, "get")
-    #             for k, v in result.items():
-    #                 out2[k].append(v)
-    #         if path_item.post is not None:
-    #             result = self._gen_func(server_stack[-1], path, path_item.post, "post")
-    #             for k, v in result.items():
-    #                 out2[k].append(v)
-    #         if path_item.head is not None:
-    #             result = self._gen_func(server_stack[-1], path, path_item.head, "head")
-    #             for k, v in result.items():
-    #                 out2[k].append(v)
-    #         if path_item.put is not None:
-    #             result = self._gen_func(server_stack[-1], path, path_item.put, "put")
-    #             for k, v in result.items():
-    #                 out2[k].append(v)
-    #         if path_item.patch is not None:
-    #             result = self._gen_func(
-    #                 server_stack[-1], path, path_item.patch, "patch"
-    #             )
-    #             for k, v in result.items():
-    #                 out2[k].append(v)
-    #         if path_item.trace is not None:
-    #             result = self._gen_func(
-    #                 server_stack[-1], path, path_item.trace, "trace"
-    #             )
-    #             for k, v in result.items():
-    #                 out2[k].append(v)
-    #     return out2
+        }
+    )
