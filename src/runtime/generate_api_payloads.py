@@ -6,6 +6,7 @@ from typing import List
 
 from flask_sqlalchemy import SQLAlchemy
 from langchain.chat_models import init_chat_model
+from langchain_openai import ChatOpenAI
 from numpy import ndarray
 from openai import OpenAI
 from openai.types.chat.chat_completion_message_tool_call import (
@@ -29,9 +30,16 @@ class CueCodePayloadGenerator:
         self._llm_client = OpenAI(
             api_key=LLM_API_KEY, base_url=LLM_BASE_URL, timeout=(5 * 60 * 1000)
         )
+        self.llm: ChatOpenAI = init_chat_model(
+            LLM_MODEL,
+            model_provider="openai",
+            base_url=LLM_BASE_URL,
+            api_key=LLM_API_KEY,
+        )
 
     _db: SQLAlchemy
     _llm_client: OpenAI
+    llm: ChatOpenAI
 
     def operation_tool_call_search(
         self, configuration_id: str, sentence: str
@@ -150,19 +158,10 @@ class CueCodePayloadGenerator:
 
         # Get ready for prompt 2 calls. Use LangChain for constraining output to the JSON schema
         # each endpoint requires
-        llm = init_chat_model(
-            LLM_MODEL,
-            model_provider="openai",
-            base_url=LLM_BASE_URL,
-            api_key=LLM_API_KEY,
-        )
-
         payloads: List[dict] = []
         for tool_call_request in tool_call_requests:
             payloads.append(
-                self._generate_structured_payload(
-                    tool_call_request, text_input, tools, llm
-                )
+                self._generate_structured_payload(tool_call_request, text_input, tools)
             )
 
         return payloads
@@ -200,7 +199,7 @@ class CueCodePayloadGenerator:
         return completion.choices[0].message.tool_calls
 
     def _generate_structured_payload(
-        self, tool_call_request: ChatCompletionMessageToolCall, text_input, tools, llm
+        self, tool_call_request: ChatCompletionMessageToolCall, text_input, tools
     ) -> OpenApiPayloadSchema:
         # Each OpenAPI operation prompt should have only its matching
         # tool call available.
@@ -214,7 +213,7 @@ class CueCodePayloadGenerator:
         )
         # print("this_json_schema_for_output")
         # print(this_json_schema_for_output)
-        this_operation_gen_model = llm.bind_tools(
+        this_operation_gen_model = self.llm.bind_tools(
             [this_json_schema_for_output], tool_choice="any"
         )
 
