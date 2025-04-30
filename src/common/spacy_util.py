@@ -1,3 +1,5 @@
+"""Utilities for spaCy"""
+
 from typing import List
 
 import spacy

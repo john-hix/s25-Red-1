@@ -1,4 +1,6 @@
-from typing import List, Literal, NotRequired, Optional, TypedDict
+"""Payload"""
+
+from typing import List, Optional, TypedDict
 
 from openai.types.chat.chat_completion_tool_param import (
     ChatCompletionToolParam,
@@ -7,10 +9,14 @@ from openai.types.chat.chat_completion_tool_param import (
 
 
 class OpenApiPayloadSchema(FunctionDefinition):
+    """Not thoroughly implemented. Payload schema for OpenAPI."""
+
     title: str
 
 
 class CueCodeApiPayload(TypedDict):
+    """Not thoroughly implemented. Payload schema for CueCode's OpenAPI responses."""
+
     request_body: dict
     parameters: Optional[List[dict]]
 

@@ -1,6 +1,5 @@
 """Module to general API payloads"""
 
-import json
 import logging
 from typing import List
 
@@ -31,7 +30,7 @@ class CueCodePayloadGenerator:
         self._llm_client = OpenAI(
             api_key=LLM_API_KEY, base_url=LLM_BASE_URL, timeout=(5 * 60 * 1000)
         )
-        self.llm: ChatOpenAI = init_chat_model(
+        self.llm: ChatOpenAI = init_chat_model(  # type: ignore[annotation-unchecked]
             LLM_MODEL,
             model_provider="openai",
             base_url=LLM_BASE_URL,
@@ -42,6 +41,7 @@ class CueCodePayloadGenerator:
     _llm_client: OpenAI
     llm: ChatOpenAI
 
+    # pylint: disable-next=too-many-locals
     def operation_tool_call_search(
         self, configuration_id: str, sentence: str
     ) -> tuple[List[dict], dict[str, dict]]:
@@ -256,7 +256,7 @@ class CueCodePayloadGenerator:
 
         # Generate response according to strict JSON Schema defined for
         # this Operation
-        structured_llm = this_operation_gen_model.with_structured_output(
+        structured_llm = this_operation_gen_model.with_structured_output(  # type: ignore
             this_json_schema_for_output
         )
         structured_prompt = (
