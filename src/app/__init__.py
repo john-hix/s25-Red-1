@@ -28,7 +28,7 @@ def create_app():
     portal_bp = create_portal_blueprint()
     app.register_blueprint(portal_bp, url_prefix="/portal")
 
-    api_bp = create_api_blueprint()
+    api_bp = create_api_blueprint(db)
     app.register_blueprint(api_bp, url_prefix="/api")
 
     # health check endpoint

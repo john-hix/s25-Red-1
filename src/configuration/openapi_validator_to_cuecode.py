@@ -93,12 +93,18 @@ def openapi_spec_validator_to_cuecode_config(
             if not op_obj:
                 continue
 
-            tool_call_spec = jsonref.replace_refs(
-                make_tool_call_spec(
-                    path_name=path_key, operation_object=op_obj, http_verb=op["verb"]
+            tool_call_spec = None
+            try:
+                tool_call_spec = jsonref.replace_refs(
+                    make_tool_call_spec(
+                        path_name=path_key,
+                        operation_object=op_obj,
+                        http_verb=op["verb"],
+                    )
                 )
-            )
-            print(type(tool_call_spec))  # DEBUG
+                print(type(tool_call_spec))  # DEBUG
+            except KeyError:
+                continue
 
             db_op = OpenAPIOperation(
                 openapi_path_id=path.openapi_path_id,
