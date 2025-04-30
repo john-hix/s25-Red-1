@@ -1,4 +1,4 @@
-from typing import Literal, NotRequired, Optional, TypedDict
+from typing import List, Literal, NotRequired, Optional, TypedDict
 
 from openai.types.chat.chat_completion_tool_param import (
     ChatCompletionToolParam,
@@ -8,6 +8,11 @@ from openai.types.chat.chat_completion_tool_param import (
 
 class OpenApiPayloadSchema(FunctionDefinition):
     title: str
+
+
+class CueCodeApiPayload(TypedDict):
+    request_body: dict
+    parameters: Optional[List[dict]]
 
 
 # class OpenApiPayload(TypedDict):

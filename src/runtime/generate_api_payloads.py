@@ -17,6 +17,7 @@ from sentence_transformers import SentenceTransformer
 from werkzeug.exceptions import NotFound
 
 from common.app_config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
+from common.models.openapi_path import OpenAPIPath
 from common.payload import OpenApiPayloadSchema, tool_call_spec_to_payload_json_schema
 from common.spacy_util import get_all_sentences
 
@@ -43,7 +44,7 @@ class CueCodePayloadGenerator:
 
     def operation_tool_call_search(
         self, configuration_id: str, sentence: str
-    ) -> List[dict]:
+    ) -> tuple[List[dict], dict[str, dict]]:
         """Tool call semantic search for a CueCode configuration"""
 
         model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
@@ -94,7 +95,18 @@ class CueCodePayloadGenerator:
                     "llm_content_gen_tool_call_spec": row[6],
                 }
             )
-        return keyed_results
+        # Map tool call names to database info so further information can
+        # be pulled from the DB, should the tool call (Operation) be selected.
+        tool_fn_to_operation_info: dict = {}
+        for t in keyed_results:
+            tool_fn_to_operation_info[
+                t["llm_content_gen_tool_call_spec"]["function"]["name"]
+            ] = {
+                "openapi_path_id": t["openapi_path_id"],
+                "http_verb": t["http_verb"],
+                "cosine_similiarity": t["cosine_similiarity"],
+            }
+        return (keyed_results, tool_fn_to_operation_info)
 
     def _dedupe_function_call_specs(
         self, tools_possible_dupes: List[ChatCompletionToolParam]
@@ -111,19 +123,30 @@ class CueCodePayloadGenerator:
 
     def _build_tool_call_list_for_text_input(
         self, configuration_id, text_input
-    ) -> List[ChatCompletionToolParam]:
+    ) -> tuple[List[ChatCompletionToolParam], dict[str, dict]]:
         tools_possible_dupes: List[ChatCompletionToolParam] = []
         # Since all operations are embedded using one sentence, we split by
         # sentence, the collect all tool calls for all sentences together
         # to let the LLM decide how to use them.
+        tool_fn_to_operation_info: dict[str, dict] = {}
         for sentence in get_all_sentences(text_input):
-            for operation_tool_call_match in self.operation_tool_call_search(
-                configuration_id, sentence
-            ):
+            keyed_results, this_batch_tool_fn_to_operation_info = (
+                self.operation_tool_call_search(configuration_id, sentence)
+            )
+            for operation_tool_call_match in keyed_results:
+                # Add tool call to our list for later deduplication
                 tools_possible_dupes.append(
                     operation_tool_call_match["llm_content_gen_tool_call_spec"]
                 )
-
+                # Add tool call to OpenAPI Operation info mapping, unique for
+                # each Operation
+                fn_name = operation_tool_call_match["llm_content_gen_tool_call_spec"][
+                    "function"
+                ]["name"]
+                if not tool_fn_to_operation_info.get(fn_name):
+                    tool_fn_to_operation_info[fn_name] = (
+                        this_batch_tool_fn_to_operation_info[fn_name]
+                    )
         tools = self._dedupe_function_call_specs(tools_possible_dupes)
 
         if len(tools) < 1:
@@ -131,14 +154,18 @@ class CueCodePayloadGenerator:
                 "LLM could not identify endpoints for input via tool call prompts."
             )
 
-        print("tools")
-        print(json.dumps(tools, indent=2))
-        return tools
+        # print("tools")
+        # print(json.dumps(tools, indent=2))
+        # print("mapping::===========================================")
+        # print(tool_fn_to_operation_info)
+        return (tools, tool_fn_to_operation_info)
 
     def generate_operations(self, configuration_id, text_input) -> List[dict]:
         """Generates OpenAPI operations"""
 
-        tools = self._build_tool_call_list_for_text_input(configuration_id, text_input)
+        tools, tool_fn_to_operation_info = self._build_tool_call_list_for_text_input(
+            configuration_id, text_input
+        )
 
         # Two prompts:
         #   1. a one-shot that selects the OpenAPI operations that must be
@@ -160,9 +187,15 @@ class CueCodePayloadGenerator:
         # each endpoint requires
         payloads: List[dict] = []
         for tool_call_request in tool_call_requests:
-            payloads.append(
-                self._generate_structured_payload(tool_call_request, text_input, tools)
-            )
+            try:
+                payloads.append(
+                    self._generate_structured_payload(
+                        tool_call_request, text_input, tools, tool_fn_to_operation_info
+                    )
+                )
+            except ValueError as e:
+                logging.warning("Error professing tool")
+                logging.warning(e)
 
         return payloads
 
@@ -199,7 +232,11 @@ class CueCodePayloadGenerator:
         return completion.choices[0].message.tool_calls
 
     def _generate_structured_payload(
-        self, tool_call_request: ChatCompletionMessageToolCall, text_input, tools
+        self,
+        tool_call_request: ChatCompletionMessageToolCall,
+        text_input,
+        tools,
+        tool_fn_to_operation_info: dict[str, dict],
     ) -> OpenApiPayloadSchema:
         # Each OpenAPI operation prompt should have only its matching
         # tool call available.
@@ -231,8 +268,26 @@ class CueCodePayloadGenerator:
             + text_input
         )
         response = structured_llm.invoke(structured_prompt)
+        print(response)
+
+        # Get the Path associated with this Operation
+        operation_info = tool_fn_to_operation_info[
+            this_tool_call_spec["function"]["name"]
+        ]
+        print(operation_info)
+        path = self._db.session.get_one(
+            OpenAPIPath, str(operation_info["openapi_path_id"])
+        )
+        http_verb = operation_info["http_verb"]
 
         # print(type(response))
         # print(response)
         # print(json.dumps(response, indent=2))
-        return response
+        return {
+            **response,
+            "http_verb": http_verb,
+            "path_templated": path.path_templated,
+            "tool_call_spec": this_tool_call_spec,
+            "sentence_operation_similarity": operation_info["cosine_similiarity"],
+            "sentence_matched": "TODO",
+        }
